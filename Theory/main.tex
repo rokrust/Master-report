@@ -1,0 +1,45 @@
+\graphicspath{{Theory/}}
+%\includegraphics[scale=0.3]{bilder/taco_cat_in_space.jpg}
+%\chapter{Introduction}
+
+\section{GNSS}
+    \subimport{Theory/}{gnssNew.tex}
+
+\section{Integrating INS and GNSS}
+    \subimport{Theory/}{integration.tex}
+
+\section{Software packages}
+    \subimport{Theory/}{software-packages.tex}
+%Structure
+    % 1 - INS
+    % 2 - GNSS
+    % 3 - Integration
+    
+%x Theory
+%x  - GNSS (raskt renskrevet fra prosjektoppgave)
+%x  - Integration
+%x     1 - Motivation
+%x         + Improving state estimation
+%x     2 - Architectures
+%x         + Loose
+%x         + Tight
+%x         + Ultra tight
+%x         + Feedback vs open loop
+%x     3 - Kalman filter
+%x         + KF / EKF
+%x           - Indirect implementation
+%x               - Orientations state minimal. No over-parametrization
+%x               - Operating close to the origin. Far away from singularities
+%x               - Always small. Second-order products negligible
+%x               - Error dynamics are small. All large dynamics already in nominal state. Can apply
+%x               - corrections at a lower rate than predictions 
+%x               - \cite{sola2017quaternion}
+%x           - MEKF
+%x               - Maintains quaternion unit length
+%x     4 - Parametrizations
+%x         + Vector-angle
+%x         + Euler
+%x         + Quaternion (Linear diff. eq. No EKF divergence)
+%x         + Gibbs
+%x         + Modified Rodrigues
+    

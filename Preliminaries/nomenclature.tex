@@ -1,0 +1,35 @@
+\makenomenclature
+\renewcommand{\nomname}{Nomenclature} %Set nomenclature title
+\renewcommand\nomgroup[1]{%
+  \item[\bfseries
+  \ifstrequal{#1}{G}{GNSS}{%
+  \ifstrequal{#1}{N}{Kalman filter}{%
+  \ifstrequal{#1}{O}{Other Symbols}{}}}%
+]}
+\renewcommand{\nompreamble}{}
+
+\mbox{}
+\nomenclature[G, 1]{$c$}{Speed of light}
+\nomenclature[G, 2]{$\rho_i$}{Pseudorange from satellite $i$}
+\nomenclature[G, 3]{$R_i$}{True satellite range}
+\nomenclature[G, 4]{$\tau$}{Receiver clock bias}
+\nomenclature[G, 5]{$\bf p_{si}$}{Satellite position}
+\nomenclature[G, 6]{$\bf p$}{Receiver position}
+
+\nomenclature[N, 1]{$\eta$}{The real scalar part of the quaternion}
+\nomenclature[N, 2]{$\bm{\varepsilon}$}{The vector part of the quaternion}
+
+\printnomenclature
+\vspace{0.5cm}
+{\Large\bf Abbreviations}
+\begin{enumerate}[labelwidth=4em,leftmargin =\labelwidth]
+\item [\textbf{AHRS}] - Attitude Heading Reference System
+\item [\textbf{IMU}] - Inertial Measurement Unit
+\item [\textbf{INS}] - Inertial Navigation System
+\item [\textbf{GNSS}] - Global Navigation Satellite System
+\item [\textbf{GPS}] - Global Positioning System
+\item [\textbf{SV}] - Satellite Vehicle
+\item [\textbf{PVA}] - Position-Velocity-Attitude
+\item [\textbf{EKF}] - Extended Kalman Filter
+\item [\textbf{MEKF}] - Multiplicative Extended Kalman Filter
+\end{enumerate}

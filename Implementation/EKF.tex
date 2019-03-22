@@ -1,0 +1,45 @@
+\subsection{Equations} \todo{Rename}
+    \paragraph{Initial conditions}
+    \paragraph{Prediction}
+    \todo{Fix equations}
+    \begin{align}
+        \xkn^- &= \bm{f(\xk, u_k)}\\
+        \atkn{P}^- &= \atk{\phi}\atk{P}_{-1}\atk{\phi}^T + \atk{Q}
+    \end{align}
+    
+    \paragraph{Measurement}
+    \begin{align}
+    \end{align}
+    
+    
+\subsection{Model description}
+\subsubsection{Measurement model}
+\subsubsection{Prediction model}
+\subsubsection{Discretization}
+    \cite{van1978computing}
+\subsubsection{Linearization}
+
+\subsubsection{Filter tuning}
+% R = a*(1/sin(el) + c)
+% Faster convergence e^-ax + e^-bx + c
+
+
+
+
+
+%Structure
+    % 1 - EKF method description
+    %     + Because the expected error state is always zero except between a measurement correction          and the injection of the error in to the nominal state, followed by a reset, there is no         point in actually implementing the propagation of the error state. The covariance of the         error is however propagated (Ingen x priori)
+    % 2 - Paremetrization description and state vector forms
+    %     + Quaternions have 3 DOF, but four parameters. P might be rank deficient \cite{trawny2005indirect, sola2017}
+    %      + Gibbs vector has a singularity at 180\deg. 
+    % 3 - Model description (matrices and functions)
+          
+    %     + Discretization \cite{van1978computing, wahlstrom2014discretizing}:
+    % 4 - Observability
+    % 5 - Noise models
+    %     + Eksponentielt synkende støymodell (V1*e^-T1*t + V2*e^-T2*t + V3)
+    % 6 - Challenges
+    %     + Discretization timestep
+    
+%but over-paramatrization can make the Kalman covariance matrix rank deficient

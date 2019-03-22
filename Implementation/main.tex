@@ -1,0 +1,90 @@
+\graphicspath{{Implementation/}}
+\label{ch:implementation}
+
+%%% INTRO %%%
+
+%%% FILTER DESCRIPTION %%%
+\section{Extended Kalman filter}
+\label{seq:EKF-Imp}
+    \subimport{Implementation/}{EKF.tex}
+
+%%% DUNE %%%
+\section{Simulators and testing}
+    \subimport{Implementation/}{Simulators.tex}
+
+\section{DUNE implementation}
+    \subimport{Implementation/}{Dune.tex}
+
+\section{Embedded Platform}
+    \subimport{Implementation/}{Hardware.tex}
+
+        
+
+%introduction
+%   + Quick word about LSTS: 
+%       - dune
+%           Task/Thread based
+%       - imc 
+%       - neptus
+%           Supports real time plotting
+%       - glued
+%           http://uavlab.itk.ntnu.no/wiki/doku.php?id=software:glued_details
+%           Minimal Linux operating system for embedded hardware
+%           Listens to IMC
+%       - Mention vendor libs: RTKLIB
+%   + ?MavProxy
+%   Hardware and control
+%   + Mention hardware package: BBB, Pixhawk, ArduPilot
+
+%%   Actual implementation  %%
+%   Simulators for testing
+%       + SITL, JSBSim, Flightgear, Simple GNSS
+%   RTKLIB
+%       + Play back file (no waiting for eph), read serial
+%       + Apply corrections
+%       + ?svr-struct
+%       + Dispatch as IMC to DUNE
+%       + Gotta add cmake
+%   EKF
+%       + IMC messages, ground truth, imu, gnss
+%       + Tightly coupled, indirect, general equations
+%       + Model details (loads of equations)
+%           - State model, Error state model, Measurement model, noise model
+%           - Two possibilities for integrating attitude error to nominal state
+%           
+%   Installing on BBB
+%       + Glued
+%           - Docker, partition disk, sd-card
+%       + Dune
+%           - Cross compiling
+        
+%Structure simulators
+    % 1 - GNSS 
+    %       possible to set frequency. Delay between samples
+    %       range and range rate
+    % 2 - Flightgear
+    %     + Changing of ardupilot code (use flightgear simulator instead of AP-interface for better imu precision)
+    % 3 - JSBSim?
+    
+    
+%% Questions
+% What is SITL?
+%   ardupilot.org/dev/docs/sitl-simulator-software-in-the-loop.html
+%   http://ardupilot.org/dev/_images/ArdupilotSoftwareintheLoopSITL.jpg
+%   Run ardupilot without any hardware, directly on PC (opposed to HIL)
+%   AP-SIL can simulate a bunch of random vehicles
+%   Start SITL simulator: sim_vehicle.py
+%   "When running in SITL the sensor data comes from a flight dynamics model in a flight simulator."
+%   "SITL outputs FlightGear compatible state information on UDP port 5503"
+%   Set sitl to auto to call takeoff command, then arm. Can set to different mode after
+
+%MAVPROXY?
+%   "A UAV ground station software package for MAVLink based systems"
+%   ?Mission planner console. Battery status and stuff like that?
+%   Supports different modes: Guided, land, auto..
+%   Graph takeoff: gtakeoff
+
+% How does Neptus get SITL-data?
+%   ?Listening to ports
+%   ?SITL outputs FlightGear compatible state information on UDP port 5503
+% What's the difference between flightgear and jsbsim?

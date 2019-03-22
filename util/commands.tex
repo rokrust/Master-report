@@ -1,0 +1,29 @@
+\renewcommand{\listtablename}{Tables}
+\newcommand{\figtable}[2]{
+	\subfloat[]{
+    	\includegraphics[scale=#1]{#2}
+    }
+}
+
+%math
+\newcommand{\at}[2][]{#1|_{#2}}
+
+\newcommand{\partialdiff}[2]{\frac{\partial #1}{\partial #2}}
+
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+
+\newcommand{\omgbe}{\bm{\omega_{b/e}^b}}
+
+\newcommand{\half}{\frac{1}{2}}
+
+\newcommand{\bmeps}{\bm{\varepsilon}}
+\newcommand{\bmeta}{\bm{\eta}}
+\newcommand{\eye}[1]{\bm{I_{#1x#1}}}
+\newcommand{\xkn}{\bm{x_{k+1}}}
+\newcommand{\xk}{\bm{x_k}}
+\newcommand{\Pkn}{\bm{P_{k+1}}}
+\newcommand{\Pk}{\bm{P_k}}
+\newcommand{\atk}[1]{\bm{#1_k}}
+\newcommand{\atkn}[1]{\bm{#1_{k+1}}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+%\newcommand{\skew}[1]{\bm{S(#1)}} \todo{Fix}

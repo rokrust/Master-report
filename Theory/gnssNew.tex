@@ -1,0 +1,324 @@
+%Multi gnss
+%Segments
+%Stopwatch
+%Code tracking loop thing?
+
+%What is gnss? %which systems exist? %Which are operational? %Will focus on gps here
+A Global Navigation Satellite System, is a navigation system that provides position solutions from radio signals transmitted by orbiting satellites \cite{groves2013principles}. This is a collective term for several existing systems, as of March 2019, the American GPS, the Russian GLONASS, the European Galileo and the Chinese BeiDou. The two latter of which are still under development, expected to be operational in 2020, but currently offers partial coverage \cite{galOper, beidouGlob}. Additionally, several regional augmentation systems that are compatible with GNSS exist. The following chapter will focus on GPS as it is arguably the most well known system. \\
+
+GNSS is split into three \textit{segments}:
+
+\begin{itemize}
+\item Space segment: Composed of all satellites, also called satellite vehicles (SV), in orbit transmitting GNSS data.
+\item Control segment: Monitors and updates the clock correction and orbital parameters of each satellite.
+\item User segment: Composed of all GNSS-receivers. Both military, civilian and commercial.
+\end{itemize}
+
+%How does it work? (in short)
+The satellites of each GNSS keep a medium Earth orbit, with the exception of some geostationary Beidou satellites in a geostationary orbit. These orbits gives a better signal geometry, yielding a more precise navigation solution, and better coverage in polar regions \cite{groves2013principles}. Each satellite is closely monitored by a number of control stations spread around the planet, that periodically uploads precise orbital parameters to the satellites. In turn the satellites continuously broadcast said parameters to the receivers of the user segments, along with the time of transmission. The receiver may then calculate the satellite's position from the orbital parameters, as well as the range to the transmitting satellite as signal travel time multiplied by the speed of light. From this it is possible to estimate the user's position as indicated in figure \ref{fig:pos-est}. However, as errors are multiplied by the speed of light, this is only made possible by a set of extremely precise atomic clocks onboard each satellite. The triangulation concept is shown in figure \ref{fig:pos-est}.
+
+%\missingfigure[]{Position estimation from geogebra maybe}
+\begin{figure}
+    \centering
+    \input{Theory/tikz/triangulation.tex}
+    \caption{This figure illustrates the concept of triangulation from set of satellites, neglecting any measurement errors. SV1-SV3 denotes a set of satellites, while r1-r3 denotes the distance between them and the receiver. Circles with radii given by the ranges are also shown, and the receiver position is given by the intersection of these.}
+    \label{fig:pos-est}
+\end{figure}
+
+\subsection{Signal composition}
+GPS is currently undergoing a modernization program, replacing the old, \textit{legacy}, signals \cite{groves2013principles, farrell2008aided}. However, as these have not been fully introduced yet, this thesis will focus on the legacy civillian L1 C / A signal. This signal consists of three distinct parts; the carrier frequency of 1575.42 MHz, a \textit{pseudo-random noise} sequence and a navigation message \cite{misra2006global}. The pseudo-random noise, also known as a PRN code or C/A code for the L1 signal, is a sequence of 1023 bits, repeated each millisecond. They are unique to each satellite, and have interesting properties with regard to both auto- and cross-correlation as distinct codes are nearly orthogonal to each other. In other words, the cross-correlation of two distinct, arbitrarily shifted, PRN-codes is nearly zero, meaning that satellites can broadcast simultaneously at the same frequency with no risk of interfering with each other. This is known as code-division multiple access (CDMA) \cite{groves2013principles}. The other property is that the auto-correlation peaks for an unshifted code sequence. This allows a receiver to align a replica of a PRN code with an incoming one, yielding a common reference for time keeping. Figure \ref{fig:prn-match} illustrates this concept.\\
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[scale=0.7]{bilder/prn_autocorr.eps}
+    \caption{Cross-correlation between a PRN code shifted by 15 bits and the original unshifted sequence.}
+    \label{fig:prn-match}
+\end{figure}
+
+The navigation message includes orbital parameters for calculating satellite position and velocity and is usually called the \textit{ephemeris}. It also contains satellite clock error parameters and the \textit{almanac}. This is a sort of coarse ephemeris that allows a receiver to calculate the approximate positions of all satellites. This is used to predict when a satellite might be visible and aids rapid signal acquisition \cite{misra2006global}, see section \ref{sec:pr}. It has a longer lifespan than the ephemeris, estimating satellite positions to an accuracy of 3600 meters up to two weeks after the initial upload \cite{groves2013principles}, and is often stored in the receiver between shutdowns. Additionally, the almanac includes parameters from the Klobuchar ionospheric model, described in appendix \ref{app:klobuchar}. The ephemeris and clock error equations are described in detail in section \ref{sec:ephemeris}.
+    
+\subsection{Observables}
+\subsubsection{Pseudo-range} 
+\label{sec:pr}
+%Acquisition
+When a receiver detects the signal of a new satellite, it will try to lock on to it. This is the process of initially aligning the replica PRN code to that of an incoming signal, and is known as signal \textit{acquisition}. When a match is found for a given signal, and hence the signal phase determined, it's assigned a channel in the receiver, maintaining the satellite signal phase, and the \textit{code tracking} process can begin. This is were the pseudo-range measurements comes from; an incoming acquired signal will have lagged behind the replica PRN during the time of transmission, and multiplying the lag time by the speed of light, the pseudo-range is found. \\
+
+The measurement is called \textit{pseudo}-range as it incorporates numerous errors with the true range, and are explained in more detail in section \ref{sec:errors}. This includes both satellite and receiver clock errors, atmospheric delays and relativistic effects as well as others, shown in figure \ref{fig:pr-delay}. The pseudo-range between the receiver and a satellite \textit{i} can be modeled as follows \cite{farrell2008aided}
+\begin{align}
+    P_i &= \rho_i + c(\delta t_r - \Delta t_{sv}_i) + I_r_i + T_r_i + \eta_i\\
+    \intertext{Where $\rho_i$ is the geometric range, $\delta t_r$ the receiver clock error, $\Delta t_{sv}_i$ the satellite clock error, $I_r_i$ the ionospheric delay, $T_r_i$ the tropospheric delay and $\eta_i$ are the unmodeled errors. The geometric range is given by}
+    \rho &= \norm{\bm{p}_r - \bm{p}_i}_2 = \sqrt{(x_r - x_i)^2 + (y_r - y_i)^2 + (z_r - z_i)^2}
+    \intertext{With $\bm{p}_r$ being the receiver position at the time of reception and $\bm{p}_i$ the satellite position at the time of transmission.}
+\end{align}
+
+\missingfigure[]{pseudo-range}
+\begin{figure}
+    \centering
+    \includegraphics{}
+    \caption{Caption}
+    \label{fig:pr-delay}
+\end{figure}
+
+\todo{Mention position estimation 4 sat?}
+%receiver clock bias
+
+
+%Acquisition and tracking. Matching of prn codes
+\subsubsection{Doppler shift}
+\missingfigure[]{Doppler shift}
+% Satellite has high speed. Doppler effect
+% Acquisition requires known doppler, or search through frequency
+% Doppler equation
+
+
+
+\subsubsection{Carrier Phase} \todo{Proper title}
+%Mentioned for completeness, not used in this thesis
+%Carrier smoothing
+
+\subsection{Ephemeris calculations}
+\label{sec:ephemeris}
+The ephemeris and clock correction parameters as well as the accompanying equations are shown in table \ref{tab:ephemeris} and equation set \ref{eq:ephemeris}, respectively. Satellite velocities are needed to estimate receiver velocity from the doppler shift, but the equations are not shown here. For a thorough explanation of these equations the reader is referred to \cite{zhang2006gps}. As opposed to the other GNSS, GLONASS does not broadcast any Keplerian parameters, but rather position, velocity and acceleration in the ECEF frame are broadcast directly. \cite{groves2013principles}\\
+
+\subsubsection{Ephemeris equations}
+\todo{Move to appendix}
+\label{sec:eph_equations}
+\begin{table}[!htbp]
+\noindent
+\textbf{Time}\\
+\begin{tabular}{l r}
+	\begin{tabular}{l | r}
+	\multicolumn{2}{l}{\textit{Parameters}}\\
+	\hline
+	$t_{sv}$ & Satellite broadcast time \\
+	$w_n$ & Satellite week \\
+	$t_{ow}$ & Seconds in GPS week \\
+	$t_{gd}$ & Group delay \\
+    $t_{oc}$ & Clock data reference time \\
+    $t_{oe}$ & Ephemeris reference time
+	\end{tabular}
+	&
+	\begin{tabular}{l | r}
+	\multicolumn{2}{l}{\textit{Corrections}}\\
+	\hline
+	$a_{f2}$ & Satellite clock correction 2 \\
+	$a_{f1}$ & Satellite clock correction 1 \\
+	$a_{f0}$ & Satellite clock correction 0 \\
+	\multicolumn{2}{l}{}\\
+	\multicolumn{2}{l}{}\\
+    \multicolumn{2}{l}{}\\
+	\end{tabular}
+\end{tabular} \\
+
+\vspace{0.5cm}
+\noindent
+\textbf{Orbital}\\
+\begin{tabular}{l r}
+	\begin{tabular}{l | r}
+	\multicolumn{2}{l}{\textit{Parameters}}\\
+	\hline
+	$M_0$ & Mean anomaly at reference time\\
+    $i_0$ & Inclination angle at reference time\\
+    $\Omega_0$ & Longitude of ascending node of orbit\\
+    $\omega$ & Argument of perigee\\
+    e & Eccentricity\\
+    $\sqrt{A}$ & Square root of semi-major axis\\
+    $\dot{\Omega}$ & Rate of right ascension\\
+    $\dot{i}$ & Rate of inclination angle \\
+    
+    
+	\end{tabular}
+	&
+	\begin{tabular}{l | r}
+	\multicolumn{2}{l}{\textit{Corrections}}\\
+	\hline
+	$C_{us}$ & Lateral correction \\
+	$C_{uc}$ & parameters\\
+	$C_{rc}$ & Radius correction \\
+    $C_{rs}$ & parameters\\
+	$C_{is}$ & Inclination correction\\
+	$C_{ic}$ & parameters\\
+    $\Delta n$ & Mean motion difference \\
+    \multicolumn{2}{l}{}
+	\end{tabular}
+\end{tabular}
+
+\vspace{0.5cm}
+\noindent
+\textbf{Validity}\\
+\begin{tabular}{l | r}
+	\multicolumn{2}{l}{\textit{Validity}}\\
+	\hline
+	IODC & Clock data validity \\
+    IODE & Ephemeris validity\\
+\end{tabular}
+\caption{Ephemeris data}
+\label{tab:ephemeris}
+\end{table}
+
+
+Several parameters are needed to calculate clock error and satellite position. Here as shown in \cite{farrell2008aided} and \cite{groves2013principles}. All of the parameters from the ephemerides are underlined.\\
+
+\begin{subequations}
+	\label{eq:ephemeris}
+	\begin{align}
+		\intertext{The measured satellite broadcast time contains small errors due to satellite clock bias and relativistic effects. The first step is therefore to apply the correction}		
+        \Delta t_{sv} &= \underline{a_{f0}} + \underline{a_{f1}}(t - \underline{t_{oc}}) +
+        \underline{a_{f2}}(t - \underline{t_{oc}})^2 + \Delta t_r\label{eq:eph_time_corr}\\
+		\intertext{Where the relativistic correction $\Delta t_r$ is}
+		\Delta t_r &= F\underline{e}\underline{\sqrt{A}}sin(E)\\
+        \intertext{Where $F = -4.442807633E^{-10}$ is a constant and $E$ is calculated in equation \ref{eq:eph_ecc_anomaly}}
+        \intertext{and the corrected satellite time is}
+       	t &= t_{sv} - \Delta t_{sv} \label{eq:eph_corr_time}\\
+        \intertext{Note that equation \ref{eq:eph_time_corr} and \ref{eq:eph_corr_time} are coupled. However, it has been found that $t_{sv}$ can approximate $t$ in this case without any notable lack in precision \cite{groves2013principles}.}
+		\intertext{The mean motion is then computed as $n_0 = \sqrt{\frac{\mu}{\underline{A^3}}}$ and corrected}
+		n &= n_0 + \underline{\Delta n}\\
+        \intertext{With the time of signal transmission relative to the ephemeris reference time}
+        \Delta t &= t_{st} - \underline{t_{oe}}
+		\intertext{Mean anomaly, M, is then found}
+		M &= \underline{M_0} + \bigg(n_0 + \underline{\Delta n}\bigg)\Delta t\\
+        \intertext{To find the eccentric anomaly, $E$, Kepler's equation is solved iteratively}
+        M &= E_k - \underline{e_0}sin(E_k)\\
+        \label{eq:eph_ecc_anomaly}\nonumber
+        \intertext{Performing 20 iterations should give centmetric accuracy, while 22 iterations yields millimetric accuracy \cite{groves2013principles}.}\nonumber
+        \intertext{From the eccentric anomaly, the true anomaly can be found}
+        \nu &= tan^{-1}\bigg(\frac{\sqrt{1-\underline{e_0}^2} sin(E)}{cos(E)-\underline{e_0}}\bigg)\\
+        \intertext{Expressing position in polar coordinates, the argument of latitude is found as}
+        \phi &= \underline{\omega} + \nu\\
+        \intertext{The orbital radius varies with the eccentric anomaly however, harmonic perturbations are present here and in the argument of latitude as well as the inclination. Thus, the corrections of argument, radius and inclination, respectively, is found}
+        \delta u &= \underline{C_{us}} sin(2\phi) + \underline{C_{uc}} cos(2\phi)\\
+        \delta r &= \underline{C_{rs}} sin(2\phi) + \underline{C_{rc}} cos(2\phi)\\
+      	\delta i &= \underline{C_{is}} sin(2\phi) + \underline{C_{ic}} cos(2\phi)\\
+        \intertext{Applying these yields the corrected expressions}
+        u &= \phi + \delta u\\
+        r &= \underline{A}(1-\underline{e_0} cos(E)) + \delta r\\
+        i &= \underline{i_0} + \delta i + \underline{\dot{i}}t\\
+        \intertext{The transmitted longitude of the ascending node, $\underline{\Omega_0}$, is transmitted with respect to the week epoch. With respect to the reference time this is given by}
+        \Omega &= \underline{\Omega_0} - w_{ie}(\Delta t + \underline{t_{oe}}) + \underline{\dot{\Omega}}\Delta t\\
+        \intertext{Where $w_{ie} = 7.2921151467E^{-5}$ is the rotation rate of the Earth. Satellite position in the orbital plane is then found as}
+        X &= r cos(u)\\
+        Y &= r sin(u)\\
+        \intertext{Finally, satellite position in the ECEF frame is given by}
+        x &= X cos(\Omega) - Y cos(i)sin(\Omega)\\
+        y &= X sin(\Omega) + Y cos(i)cos(\Omega)\\
+        z &= Y sin(i)
+        \intertext{It should also be noted that the equations should handle week crossovers, as the GPS time will be reset at this point. This is done by adding $\pm 604800$ to the corrected GPS time so that it stays in the intervall $[0, 302400]$.}\nonumber
+	\end{align}
+\end{subequations}
+
+\subsection{Error sources} \todo{proper title}
+\subsubsection{Atmospheric errors}
+When the GPS signals are transmitted through the atmosphere, the GPS's assumption that the signals travel in a straight line at constant speed no longer holds. The change in signal speed is much more significant than the effect on the signal path \cite{farrell2008aided} and is represented by the refractive index:
+
+\begin{equation*}
+	\eta = \frac{c}{v}
+\end{equation*}
+Where c is the speed of light and v is the actual signal speed. When the refraction index of a medium frequency dependent, the medium is said to be \textit{dispersive}.\\
+
+To model the atmospheric delay the atmosphere is divided into two layers. The ionosphere is the section of the atmosphere between 50 and 1000 km from the surface of the earth, while the troposphere is the lower layer between receiver and the ionosphere. The magnitude of the atmospheric errors each vary with the SV elevation angle as the length of exposure through the atmosphere increases inversely with elevation angle \cite{farrell2008aided, groves2013principles}. This is due to the fact that a lower elevation angle results in a longer travel path and by extension a longer exposure to the warping effects of the atmosphere. Figure \ref{fig:signal_prop} demonstrates this.\\
+
+\begin{figure}[!htbp]
+	\centering
+	\input{tikz/sat-prop.tex}
+    \caption[GPS signal propagation to Earth]{GPS signal propagation to Earth. SV2 is an example of a satellite with a low elevation angle, while SV1 has a high one. The dashed red line is the path the signal follows to the receiver and is longer for SV2.}
+    \label{fig:signal_prop}
+\end{figure}
+
+\todo{remove typical values and figure?}
+Typical ionospheric and tropospheric delays with respect to elevation angle are shown in figure \ref{fig:atmo_elev_error}. 
+
+\paragraph{Ionospheric error}
+The ionospheric error is a result of free ions and positively charged molecules in the ionosphere. The level of ionization depends on solar activity, seasons and time-of-day which directly affects the speed and travel time of GPS-signals, thereby resulting in an error in the range measured at the receiver. There are several ways of combating this, however. One approach is to take advantage of the fact that the ionosphere is dispersive by using a dual-frequency receiver. The residual ionospheric error in a dual-frequency receiver is in the order of 0.1 m \cite{groves2013principles}, and is the main reason the GPS employs two frequencies. Most receivers only use the L1 frequency however and must estimate the error through a secondary receiver or by mathematical models, such as the NeQuick \cite{di1990analytical} or Klobuchar models \cite{klobuchar1987ionospheric}. The latter is used by the GPS, and the external parameters needed by the receiver is transmitted in the almanac, while also being a function of the receiver position, satellite azimuth and elevation. Galileo uses the former while GLONASS does not broadcast any ionospheric model parameters \cite{groves2013principles}. The Klobuchar ionospheric model is shown in appendix \ref{app:klobuchar}.\\
+
+\paragraph{Tropospheric}
+The tropospheric error is usually the smallest of the atmospheric errors, but it is also much more sensitive to low elevation angles, with a worst case error of up to 30m \cite{farrell2008aided}. As the troposphere is non-dispersive, delays are consistent for L1 and L2 and both single- and dual-frequency receivers must therefore rely on models to apply corrections. Normally, average values for the receiver's location is employed, although meteorological instruments can aid the receiver to obtain more precise results \cite{farrell2008aided}. \\
+
+Gases like nitrogen and oxygen, normally called the dry components, and water vapor, called the wet component, affect the refraction index differently and must therefore be modeled separately. The dry components account for around 90\% of the tropospheric delay and is fairly easy to model as the parameters often are stable for a given area. The wet components are harder to model accurately as they are local and highly varying, but only accounts for about 10\% of the delay, \cite{farrell2008aided, groves2013principles}. 
+
+There are several approaches to dealing with the tropospheric delay, where this thesis relies on the the well known Saastamoinen tropospheric model found in appendix \ref{app:saas}. \cite{hirahara2000local} offers an interesting approach to a cell based modeling of the troposphere based on a dense collection of GPS receivers. \cite{priego2017monitoring} investigates how heavy rainfall affects GNSS signals and \cite{baldysz2016comparison} investigates seasonal variations of the troposphere with respect to long term climate monitoring.
+
+%Graph of elev atmo error
+\begin{figure}[!htbp]
+	\centering
+	%\includegraphics[scale=0.5]{bilder/groves_elev_atmo_error.png}
+    \caption[Relation between atmospheric errors and elevation]{Atmospheric errors as a function of satellite elevation angle. (From \cite{groves2013principles})}
+    \label{fig:atmo_elev_error}
+\end{figure}
+
+\subsubsection{Ephemeris error}
+\label{sec:eph_error}
+The ephemeris model is estimated through a curve fit to the measured orbit by the control segment and variations might therefore occur, \cite{farrell2008aided}. The result is a difference between actual and estimated SV position and the associated angle between actual and estimated signal path leads to a range error due to the long distance between receiver and SV. In fact, the sensitivity of position to the angular parameters in the ephemeris is in the order of $10^8 \deg$, while the angular rate parameters has a sensitivity in the order of $10^{12}deg/s$. \todo{citation needed}
+
+\subsubsection{Multipath}
+\label{sec:multipath}
+Multipath errors occur when a satellite signal reach the receiver through multiple paths due to the signal reflecting off some surface. Signals that are reflected will arrive later than the signal taking the direct route and can usually be detected by the receiver if the delay is large enough. If the reflected signals arrive before the PRN code has been correlated however, interference can occur and shift the correlation peak. As the correlation peak is used to measure the delay from transmission to receival, pseudorange errors will occur. This also means that higher data rate signals are less susceptible to multipath errors \cite{groves2013principles}. \todo{verify}\\
+
+Signals from satellites at low elevations travel nearly parallel to the surface of the Earth and the chance of the signal being reflected off the ground is therefore substantially higher. Thus, discarding data from these satellites might improve the GPS solution \cite{farrell2008aided, groves2013principles}.
+
+\subsubsection{Group delay}
+The clock correction polynomial, equation \ref{eq:eph_corr_time}, is incorporates the so called group delay of the GNSS equipment. This is the delay in the hardware of the satellite, from the initiation of a transmission until a signal is actually transmitted. However, the polynomial is tuned to dual frequency receivers, so single frequency receivers require an additional correction parameter \cite{spec:gps}. This is broadcast in the navigation message and applied as follows
+\begin{equation}
+    (\Delta t_{sv})_{L1C/A} = \Delta t_{sv} - T_{gd}
+\end{equation}
+
+For the modernized GPS, the civillian signals will include an additional correction called the \textit{inter-signal correction} \cite{spec:gps-new}.
+%Delay between L1 and L2?
+
+\todo{write something}
+
+\subsubsection{Earth rotation}
+When working with the non-inertial ECEF frame, it is important to consider earth rotation during signal transmission. The ephemeris equations of \ref{sec:eph_equations} calculates satellite positions as a function of time, in the ECEF frame of that instant, while the receiver, on the other hand, estimates its position with respect to the ECEF frame at the time of signal reception. In other words, as illustrated in figure \ref{fig:sagnac}, the positions are expressed with respect to two separate coordinate frames. These must be aligned, as neglecting this may otherwise result in a significant east-west error of as much 41 meters at the equator \cite{groves2013principles}.\\
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[scale=0.75]{bilder/sagnac.pdf}%{Theory/tikz/sagnac.tex}
+    \caption{Illustration of earth rotation during signal transmission. }
+    \label{fig:sagnac}
+\end{figure}
+
+Aligning either of the two frames with the other will be equivalent to using a single intertial frame \cite{groves2013principles}. The true range is then expressed as
+\todo{Add to nomenclature/definitions}
+\begin{align}
+    \rho &= \norm{\bm{R}^{e(t_r)}_{e(t_t)}\bm{p}^{e(t_t)}_{s} - \bm{p}^{e(t_r)}_r}_2\\
+\intertext{where the $t_r$ and $t_t$ denotes the time of reception and transmission respectively, $e(t_x)$ is the ECEF frame at time $t_x$ with respect to a common inertial frame and $\bm{R}^{e(t_r)}_{e(t_t)}$ is the rotation matrix from the satellite frame to the receiver frame. As the different frames share both origin and a single axis, the rotation matrix is given by}
+    \bm{R}^{e(t_r)}_{e(t_t)} &= 
+    \begin{bmatrix}
+        cos(w_{ie}(t_r-t_t))  & sin(w_{ie}(t_r-t_t)) & 0\\
+        -sin(w_{ie}(t_r-t_t)) & cos(w_{ie}(t_r-t_t)) & 0\\
+        0                     & 0                    & 1
+    \end{bmatrix}\\
+\intertext{However, given the low rotation speed of the earth, in the order of $10^-5$, it is reasonable to apply the small angle approximation, $sin(\theta) = \theta$ and $cos(\theta) = 1$}
+\bm{R}^{e(t_r)}_{e(t_t)} &\approx 
+    \begin{bmatrix}
+        1                   & w_{ie}(t_r-t_t)  & 0\\
+        -w_{ie}(t_r-t_t)    & 1                & 0\\
+        0                   & 0                & 1
+    \end{bmatrix}
+    =
+    \begin{bmatrix}
+        1                     & w_{ie}\frac{\rho}{c} & 0\\
+        -w_{ie}\frac{\rho}{c} & 1                    & 0\\
+        0                     & 0                    & 1
+    \end{bmatrix}
+\end{align}
+
+It is also possible to approximate this effect as a correction term, often called the sagnac correction
+\begin{align}
+    \label{eq:range-sagnac}
+    \rho &\approx \norm{\bm{p}^{e(t_t)}_{s} - \bm{p}^{e(t_r)}_r} + \delta\rho_{sagnac}\\
+    \intertext{With the correction approximated to}
+    \label{eq:sagnac-corr}
+    \delta\rho_{sagnac} &\approx \frac{\omega_{ie}}{c}(y^{e(t_t)}_{s}x^{e(t_r)}_{r}-x^{e(t_t)}_{s}y^{e(t_r)}_{r})
+\end{align}
+
+The non-inertial frame will also affect the range rate measurements with an error of up to 2$\frac{mm}{s}$ \cite{groves2013principles}. This correction term is found by differentiating equation \ref{eq:sagnac-corr}.
+\begin{equation}
+    \delta\dot{\rho}_{sagnac} \approx \frac{\omega_{ie}}{c}(v^{e(t_t)}_{s}x^{e(t_r)}_{r} + u^{e(t_r)}_{r}y^{e(t_t)}_{s}-u^{e(t_t)}_{s}y^{e(t_r)}_{r}-x^{e(t_t)}_{s}v^{e(t_r)}_{r})
+\end{equation}
+\todo{Add this to definitions/nomenclature}
+Where $u$ and $v$ denote the $x$ and $y$ component of velocity.
+
+\subsubsection{Relativistic errors} \todo{Fiks denne}
+Due to the high speeds and different gravity potential from the high orbit of the satellites, relativistic effects influences the satellite clock frequencies. This effect can be split into a constant frequency component from the satellite's nominal orbit, modified in factory, and a periodic frequency component due to the eccentricity of the orbit. The periodic component must be compensated for by the receiver, as described in section \ref{sec:ephemeris}, or it could lead to a worst case error of close to 13 meters, \cite{misra2006global}.\\
+
+Without the constant frequency correction applied, the difference in observed frequencies would accumulate to a clock error of approximately $38 \mu s$ a day, leading to a navigation error of approximately 11 km, \cite{pascual2007introducing}\todo{check article and add to source or find new source}.

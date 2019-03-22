@@ -1,0 +1,38 @@
+This section presents the results of running the system described in section \ref{sec:implementation}, with the goal of investigating performance of the EKF with real, raw data. The results are compared with a post-processed RTK solution from RTKLIB for reference.\\
+
+\section{Performing the tests}
+To compare the MEKF with other systems several tests were devised, keeping in mind known limitations of each of the systems. 
+\todo{Describe tests and thoughts behind them}
+
+\begin{table}[!htbp]
+\caption{List of tests}
+\label{tab:tests}
+    \begin{tabular}{|l|l||p{5cm}|}
+        \hline
+        \textbf{Tested systems} & \textbf{Test description} & \textbf{Expected result}\\
+        \hline
+        Coupled/uncoupled & Circular pattern & The MEKF should show an increase in precision compared to the     single GNSS solution.\\
+        \hline
+        Indirect/direct filter &  Highly dynamic zigzag motion & The MEKF should follow the quickly changing     state better than the direct filter.\\
+        \hline
+        The full system & Straight line motion/square pattern & The MEKF should generally perform better than     the other systems\\
+        \hline
+    \end{tabular}
+\end{table}
+
+\todo{Describe test environment}
+\missingfigure[]{Ottobil}
+
+%Structure
+    % 1 - Introduction
+    %     + Test location
+    %     + List of compared systems
+    % 2 - Performing the tests
+    %     + Description of how the tests were performed (waited for steady state..)
+    % 3 - Actual results
+    %     + Graphs, tables, rms
+    %     + 
+    
+%Log cpu usage
+
+    

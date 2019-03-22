@@ -1,0 +1,25 @@
+\subsection{DUNE} \todo{Remove section?}
+    Dune (DUNE: Unified Navigation Environment)
+    Added custom estimated state imc message.
+    
+    Config file:    RTKLIB, EKF
+    IMC:            gnssData, estimatedStateEKF, externalEstimatedState
+    
+    RTKLIB task:    Playback file, serial read, apply corrections, dispatch observables
+    EKF:            Tightly coupled, extended kalman filter, PV-estimation (PVA?)
+
+\subsection{Glued}
+    Contains dune config
+
+\subsection{RTKLIB and RTKLIBexplorer}
+    %RTKLIB is a program package for standard and precise positioning with GNSS. It is highly configurable and supports all systems, various positioning modes and several GNSS receiver protocols.
+    RTKLIB offers a substantial code base for interfacing with GNSS equipment. When this code base is accessed through a  dune task, lower level equipment interfacing is abstracted away giving all tasks easy access to GNSS observables by way of the IMC bus. Additionally, as RTKLIB is highly configurable and supports several positioning modes, it may well aid other dune systems in the future. Although most of the RTKLIB code can be treated as a black box, rigorous inspection of the higher level functions is required to understand the program flow and successfully create a Dune task. \todo{rewrite}
+    
+
+
+% Structure
+    % 1 - Dune, Neptus, IMC
+    % 2 - Glued
+    % 3 - RTKLIB
+    
+% Testing section? Simulators? How to debug?

@@ -1,0 +1,386 @@
+
+%Utstyr og hardwarepakke beskrevet her
+@inproceedings{zolich2015unmanned,
+  title={Unmanned aerial system architecture for maritime missions. Design \& hardware description},
+  author={Zolich, Artur and Johansen, Tor Arne and Cisek, Krzysztof and Klausen, Kristian},
+  booktitle={Research, Education and Development of Unmanned Aerial Systems (RED-UAS), 2015 Workshop on},
+  pages={342--350},
+  year={2015},
+  organization={IEEE}
+}
+
+% Tight integration
+% Multi GNSS
+% Description of RTK algorithm
+@article{li2017tightly,
+  title={Tightly-Coupled Integration of Multi-GNSS Single-Frequency RTK and MEMS-IMU for Enhanced Positioning Performance},
+  author={Li, Tuan and Zhang, Hongping and Niu, Xiaoji and Gao, Zhouzheng},
+  journal={Sensors},
+  volume={17},
+  number={11},
+  pages={2462},
+  year={2017},
+  publisher={Multidisciplinary Digital Publishing Institute}
+}
+
+%Tight integration vs loose (PR-based, no RTK)
+%Implementation
+%Temperature tuning
+%Sensor synchronization (time) (Avsnitt 2.4)
+%Practical implementation of equations
+@article{falco2017loose,
+  title={Loose and tight GNSS/INS integrations: Comparison of performance assessed in real urban scenarios},
+  author={Falco, Gianluca and Pini, Marco and Marucco, Gianluca},
+  journal={Sensors},
+  volume={17},
+  number={2},
+  pages={255},
+  year={2017},
+  publisher={Multidisciplinary Digital Publishing Institute}
+}
+
+@inproceedings{monikes2006post,
+  title={Post-processing GNSS/INS measurements using a tightly coupled fixed-interval smoother performing carrier phase ambiguity resolution},
+  author={Monikes, R and Teltschik, A and Wendel, J and Trommer, GF},
+  booktitle={Position, Location, And Navigation Symposium, 2006 IEEE/ION},
+  pages={283--290},
+  year={2006},
+  organization={IEEE}
+}
+
+%GNSS delay compensation
+%AI based
+%Tackle GPS shortage
+@article{chen2013novel,
+  title={Novel hybrid of strong tracking Kalman filter and wavelet neural network for GPS/INS during GPS outages},
+  author={Chen, Xiyuan and Shen, Chong and Zhang, Wei-bin and Tomizuka, Masayoshi and Xu, Yuan and Chiu, Kuanlin},
+  journal={Measurement},
+  volume={46},
+  number={10},
+  pages={3847--3854},
+  year={2013},
+  publisher={Elsevier}
+}
+
+% GPS/INS integration
+@article{tawk2014implementation,
+  title={Implementation and performance of a GPS/INS tightly coupled assisted PLL architecture using MEMS inertial sensors},
+  author={Tawk, Youssef and Tom{\'e}, Phillip and Botteron, Cyril and Stebler, Yannick and Farine, Pierre-Andr{\'e}},
+  journal={Sensors},
+  volume={14},
+  number={2},
+  pages={3768--3796},
+  year={2014},
+  publisher={Multidisciplinary Digital Publishing Institute}
+}
+
+%Bias modeling
+%Low/no acceleration case
+%Stability proof
+@inproceedings{spielvogel2017adaptive,
+  title={Adaptive estimation of measurement bias in six degree of freedom inertial measurement units: Theory and preliminary simulation evaluation},
+  author={Spielvogel, Andrew R and Whitcomb, Louis L},
+  booktitle={Intelligent Robots and Systems (IROS), 2017 IEEE/RSJ International Conference on},
+  pages={5880--5885},
+  year={2017},
+  organization={IEEE}
+}
+
+%Quaternions
+%Error state KF
+%Implementation
+@article{sola2017quaternion,
+  title={Quaternion kinematics for the error-state Kalman filter},
+  author={Sola, Joan},
+  journal={arXiv preprint arXiv:1711.02508},
+  year={2017}
+}
+
+%Quaternions
+%Error state KF
+%Multiplicative KF
+%Takes advantage of small error states to simplify equations
+
+%% Citations %%
+%The advantage of an indirect filter is that the state dimension is smaller and its response is fast.
+%The orientation error is represented by a multiplication to the computed quaternion, and he multiplicative extended Kalman filter is used.
+%The derivative of q is given by the following equation..
+@article{suh2010orientation,
+  title={Orientation estimation using a quaternion-based indirect Kalman filter with adaptive estimation of external acceleration},
+  author={Suh, Young Soo},
+  journal={IEEE Transactions on Instrumentation and Measurement},
+  volume={59},
+  number={12},
+  pages={3296--3305},
+  year={2010},
+  publisher={Institute of Electrical and Electronics Engineers, Inc., 3 Park Avenue, 17 th Fl New York NY 10016-5997 USA}
+}
+
+@book{groves2013principles,
+  title={Principles of GNSS, inertial, and multisensor integrated navigation systems},
+  author={Groves, Paul D},
+  year={2013},
+  publisher={Artech house}
+}
+
+%Rotation parametrization
+%   - Gibbs, rodrigues, euler, quaternion osv
+@article{markley2003attitude,
+  title={Attitude error representations for Kalman filtering},
+  author={Markley, F Landis},
+  journal={Journal of guidance, control, and dynamics},
+  volume={26},
+  number={2},
+  pages={311--317},
+  year={2003}
+}
+
+%Quaternion tutorial
+%Integration methods
+%Error representation
+@article{trawny2005indirect,
+  title={Indirect Kalman filter for 3D attitude estimation},
+  author={Trawny, Nikolas and Roumeliotis, Stergios I},
+  journal={University of Minnesota, Dept. of Comp. Sci. \& Eng., Tech. Rep},
+  volume={2},
+  pages={2005},
+  year={2005}
+}
+
+%Quaternion error representation
+%Bias modeling
+@article{rogne2018redundant,
+  title={Redundant MEMS-Based Inertial Navigation Using Nonlinear Observers},
+  author={Rogne, Robert H and Bryne, Torleiv H and Fossen, Thor I and Johansen, Tor A},
+  journal={Journal of Dynamic Systems, Measurement, and Control},
+  volume={140},
+  number={7},
+  pages={071001},
+  year={2018},
+  publisher={American Society of Mechanical Engineers}
+}
+
+@article{stuelpnagel1964parametrization,
+  title={On the parametrization of the three-dimensional rotation group},
+  author={Stuelpnagel, John},
+  journal={SIAM review},
+  volume={6},
+  number={4},
+  pages={422--430},
+  year={1964},
+  publisher={SIAM}
+}
+
+@article{van1978computing,
+  title={Computing integrals involving the matrix exponential},
+  author={Van Loan, Charles},
+  journal={IEEE transactions on automatic control},
+  volume={23},
+  number={3},
+  pages={395--404},
+  year={1978},
+  publisher={IEEE}
+}
+
+@book{fossen2011handbook,
+  title={Handbook of marine craft hydrodynamics and motion control},
+  author={Fossen, Thor I},
+  year={2011},
+  publisher={John Wiley \& Sons}
+}
+
+@article{shuster1993survey,
+  title={A survey of attitude representations},
+  author={Shuster, Malcolm D},
+  journal={Navigation},
+  volume={8},
+  number={9},
+  pages={439--517},
+  year={1993}
+}
+
+@article{wahlstrom2014discretizing,
+  title={Discretizing stochastic dynamical systems using Lyapunov equations},
+  author={Wahlstr{\"o}m, Niklas and Axelsson, Patrix and Gustafsson, Fredrik},
+  journal={arXiv preprint arXiv:1402.1358},
+  year={2014}
+}
+
+@techreport{spec:gps,
+  author      = "Navstar GPS Joint Program Office (SMC/GP)",
+  title       = "Navstar GPS Space Segment/Navigation User Interfaces",
+  note        = "https://www.gps.gov/technical/icwg/IS-GPS-200D.pdf",
+  year        = "2006",
+  type        = "Revision D",
+  institution = "GPS JOINT PROGRAM OFFICE"
+}
+
+@techreport{spec:gps-new,
+  author      = "Navstar GPS Joint Program Office (SMC/GP)",
+  title       = "Navstar GPS Space Segment/User Segment L5 Interfaces",
+  note        = "https://www.gps.gov/technical/icwg/IS-GPS-705E.pdf",
+  year        = "2018",
+  type        = "Revision E",
+  institution = "GPS JOINT PROGRAM OFFICE"
+}
+
+@book{farrell2008aided,
+  title={Aided navigation: GPS with high rate sensors},
+  author={Farrell, Jay},
+  year={2008},
+  publisher={McGraw-Hill, Inc.}
+}
+
+@book{grewal2007global,
+  title={Global positioning systems, inertial navigation, and integration},
+  author={Grewal, Mohinder S and Weill, Lawrence R and Andrews, Angus P},
+  year={2007},
+  publisher={John Wiley \& Sons}
+}
+
+@article{klobuchar1987ionospheric,
+  title={Ionospheric time-delay algorithm for single-frequency GPS users},
+  author={Klobuchar, John A},
+  journal={IEEE Transactions on aerospace and electronic systems},
+  number={3},
+  pages={325--331},
+  year={1987},
+  publisher={IEEE}
+}
+
+@article{di1990analytical,
+  title={An analytical model of the electron density profile in the ionosphere},
+  author={Di Giovanni, G and Radicella, SM},
+  journal={Advances in Space Research},
+  volume={10},
+  number={11},
+  pages={27--30},
+  year={1990},
+  publisher={Elsevier}
+}
+
+@article{li2011doppler,
+  title={Doppler-aided GNSS position estimation with weighted least squares},
+  author={Li, Liyan and Zhong, Jie and Zhao, Minjian},
+  journal={IEEE Transactions on Vehicular Technology},
+  volume={60},
+  number={8},
+  pages={3615--3624},
+  year={2011},
+  publisher={IEEE}
+}
+
+@article{kruglov2017modified,
+  title={Modified Gibbs's representation of rotation matrix},
+  author={Kruglov, SI and Barzda, V},
+  journal={arXiv preprint arXiv:1703.00300},
+  year={2017}
+}
+
+@misc{beidouGlob,
+  title = {The BDS-3 Preliminary System Is Completed to Provide Global Services},
+  howpublished = {\url{http://en.beidou.gov.cn/WHATSNEWS/201812/t20181227_16837.html}},
+  note = {Accessed: 2019-03-20}
+}
+
+@misc{galOper,
+    title = {FAQs}
+    howpublished = {\url{https://www.gsc-europa.eu/helpdesk/faqs}},   
+    note = {Accessed: 2019-03-20}
+}
+
+@article{misra2006global,
+  title={Global Positioning System: signals, measurements and performance second edition},
+  author={Misra, Pratap and Enge, Per},
+  journal={Massachusetts: Ganga-Jamuna Press},
+  year={2006}
+}
+
+@article{di1990analytical,
+  title={An analytical model of the electron density profile in the ionosphere},
+  author={Di Giovanni, G and Radicella, SM},
+  journal={Advances in Space Research},
+  volume={10},
+  number={11},
+  pages={27--30},
+  year={1990},
+  publisher={Elsevier}
+}
+
+@article{art:Ashby,
+	author = {Ashby, N.},
+    title = {Relativity and the Global Positioning System},
+    journal = {Physics today},
+    year = "2002",
+}
+
+@article{zhang2006gps,
+  title={GPS satellite velocity and acceleration determination using the broadcast ephemeris},
+  author={Zhang, Jason and Zhang, Kefei and Grenfell, Ron and Deakin, Rod},
+  journal={The Journal of Navigation},
+  volume={59},
+  number={2},
+  pages={293--305},
+  year={2006},
+  publisher={Cambridge University Press}
+}
+
+@article{pascual2007introducing,
+  title={Introducing relativity in global navigation satellite systems},
+  author={Pascual-S{\'a}nchez, J-F},
+  journal={Annalen der Physik},
+  volume={16},
+  number={4},
+  pages={258--273},
+  year={2007},
+  publisher={Wiley Online Library}
+}
+
+@article{hirahara2000local,
+  title={Local GPS tropospheric tomography},
+  author={Hirahara, Kazuro},
+  journal={Earth, planets and space},
+  volume={52},
+  number={11},
+  pages={935--939},
+  year={2000},
+  publisher={The Seismological Society of Japan, Society of Geomagnetism and Earth~…}
+}
+
+@article{haase2003accuracy,
+  title={Accuracy and variability of GPS tropospheric delay measurements of water vapor in the western Mediterranean},
+  author={Haase, Jennifer and Ge, Maorong and Vedel, Henrik and Calais, Eric},
+  journal={Journal of Applied Meteorology},
+  volume={42},
+  number={11},
+  pages={1547--1568},
+  year={2003}
+}
+
+@article{priego2017monitoring,
+  title={Monitoring water vapour with GNSS during a heavy rainfall event in the Spanish Mediterranean area},
+  author={Priego, E and Jones, J and Porres, MJ and Seco, A},
+  journal={Geomatics, Natural Hazards and Risk},
+  volume={8},
+  number={2},
+  pages={282--294},
+  year={2017},
+  publisher={Taylor \& Francis}
+}
+@article{baldysz2016comparison,
+  title={Comparison of GPS tropospheric delays derived from two consecutive EPN reprocessing campaigns from the point of view of climate monitoring},
+  author={Baldysz, Zofia and Nykiel, Grzegorz and Araszkiewicz, Andrzej and Figurski, Mariusz and Szafranek, Karolina},
+  journal={Atmospheric Measurement Techniques},
+  volume={9},
+  number={9},
+  pages={4861},
+  year={2016},
+  publisher={Copernicus GmbH}
+}
+
+
+%Bias modeling
+%https://arxiv.org/ftp/arxiv/papers/1212/1212.0892.pdf
+
+%Doppler method
+%http://folk.ntnu.no/torarnj/asme_obs_v2.pdf

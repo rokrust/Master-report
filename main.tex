@@ -1,0 +1,149 @@
+\documentclass[pdftex,10pt,b5paper,twoside]{book}
+\usepackage[utf8]{inputenc}
+\usepackage[toc,page]{appendix}
+\usepackage[T1]{fontenc}
+\usepackage[lmargin=25mm,rmargin=25mm,tmargin=27mm,bmargin=30mm]{geometry}
+\usepackage[]{todonotes}
+\usepackage{import}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage[sc]{mathpazo}
+\usepackage{bm}
+\usepackage{nomencl}
+\usepackage{gensymb}
+\usepackage{rotating}
+\usepackage{etoolbox}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{subfig}
+\usepackage{subfiles}
+\usepackage{multirow}
+\usepackage{setspace}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{pdfpages}
+\usepackage{pgf,tikz,pgfplots}
+\usepackage{mathrsfs}
+\usetikzlibrary{arrows}
+\pgfplotsset{compat=1.15}
+\usepackage{mathrsfs}
+\usetikzlibrary{arrows}
+\definecolor{xdxdff}{rgb}{0.49019607843137253,0.49019607843137253,1}
+\definecolor{ffqqqq}{rgb}{1,0,0}
+\definecolor{ududff}{rgb}{0.30196078431372547,0.30196078431372547,1}
+\definecolor{uuuuuu}{rgb}{0.26666666666666666,0.26666666666666666,0.26666666666666666}
+
+\input{util/structure.tex}
+\input{util/commands.tex}
+
+
+\title{Master drafts}
+\author{Øyvind Aukrust Rones}
+\date{November 2018}
+
+\begin{document}
+\todo{Change document structure (paragraph should add a new line)}
+\maketitle
+
+\listoftodos
+\input{Preliminaries/main}
+\tableofcontents
+\listoffigures
+\listoftables
+
+\chapter{Introduction}
+\newpage
+\chapter{Theory}
+    \input{Theory/main}
+\newpage
+\chapter{Implementation}
+    \input{Implementation/main}
+\newpage
+\chapter{Results}
+    \input{Results/main}
+\newpage
+    \input{Appendices/main}
+    
+\bibliographystyle{abbrv}
+\bibliography{bibliography.bib}
+    
+\end{document}
+
+
+%x Introduction
+%x  - Frontpage
+%x  - Abstract
+%x  - Sammendrag
+%x  - List of figures/tables
+%x  - Nomenclature/abbreviations
+
+%x Theory
+%x  - GNSS (raskt renskrevet fra prosjektoppgave)
+%x  - Integration
+%x     1 - Motivation
+%x         + Improving state estimation
+%x     2 - Architectures
+%x         + Loose
+%x         + Tight
+%x         + Ultra tight
+%x         + Feedback vs open loop
+%x     3 - Kalman filter
+%x         + KF / EKF
+%x           - Indirect implementation
+%x               - Orientations state minimal. No over-parametrization
+%x               - Operating close to the origin. Far away from singularities
+%x               - Always small. Second-order products negligible
+%x               - Error dynamics are small. All large dynamics already in nominal state. Can apply
+%x               - corrections at a lower rate than predictions 
+%x               - \cite{sola2017quaternion}
+%x           - MEKF
+%x               - Maintains quaternion unit length
+%x         + Nonlinear observer(?)
+%x     4 - Parametrizations
+%x         + Vector-angle
+%x         + Euler
+%x         + Quaternion (Linear diff. eq. No EKF divergence)
+%x         + Gibbs
+%x         + Modified Rodrigues
+%x         + Cayley parameters?
+    
+% Implementation
+%x  - Toolchain
+%x     1 - Dune, Neptus, IMC
+%x     2 - Glued
+%x     3 - RTKLIB
+%x  - Hardware
+%x     1 - Beaglebone black
+%x     2 - Shield 3.0
+%x     3 - GNSS receiver
+%x  - Simulators
+%x     1 - GNSS simulator
+%x     2 - Flightgear
+%x         + Changing of ardupilot code
+%x  - Full system
+%x     1 - EKF method description
+%x         + Because the expected error state is always zero except between a measurement correction and              the injection of the error in to the nominal state, followed by a reset, there is no poin                in actually implementing the propagation of the error state. The covariance of the error is              however propagated (Ingen x priori)
+%x     2 - Paremetrization description and state vector forms
+%x         + Quaternions have 3 DOF, but four parameters. P might be rank deficient                                   \cite{trawny2005indirect, sola2017}
+%x         + Gibbs vector has a singularity at 180\deg. 
+%x     3 - Model description (matrices and functions)
+%x         + Discretization \cite{van1978computing, wahlstrom2014discretizing}:
+%x     4 - Observability
+%x     5 - Noise models
+%x         + Eksponentielt synkende støymodell (V1*e^-T1*t + V2*e^-T2*t + V3)
+%x     6 - Challenges
+%x         + Discretization timestep
+
+%x Results
+%x     1 - Introduction
+%x         + Test location
+%x         + List of compared systems
+%x     2 - Performing the tests
+%x         + Description of how the tests were performed (waited for steady state..)
+%x     3 - Actual results
+%x         + Graphs, tables, rms
+
+%x Discussion
+%x     1 - Introduction
+%x         + Testing goals
+%x Conclusion

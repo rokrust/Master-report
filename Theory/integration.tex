@@ -1,0 +1,129 @@
+%Quadcopter controller. Maybe not for masters but hobby 
+%http://folk.ntnu.no/skoge/prost/proceedings/ecc-2013/data/papers/0927.pdf
+%https://brage.bibsys.no/xmlui/bitstream/handle/11250/260353/435939_FULLTEXT01.pdf?sequence=3&isAllowed=y Model/methods
+%https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20020060647.pdf
+
+%Tightly integrating INS with RTK measurements can result in a more robust system by decreasing the ambiguity resolution search space as aiding the detection of cycle slips \cite{li2017tightly}.
+%\todo{Add mechanization equations. Explain imu bias and range bias/bias rate}
+%\todo{Add earth rotation too?}
+
+\subsection{Architectures}
+    \todo{Add fillertext: There are different ways of integrating measurements. "coupledness"}
+    \subsubsection{Loose coupling}
+    \missingfigure{Loosely integrated}
+    A loosely integrated system is a highly modular and simple way of implementing GNSS/INS integration, shown in figure \ref{fig:loosely_coupled}. In this scheme, raw GNSS and IMU data are handled independently to obtain separate PVA estimates. Integrated estimates can then be obtained through an integration function, such as a Kalman filter or nonlinear observer, to provide an improved solution \cite{book:Noureldin}. This type of system is usually implemented closed loop by estimating and correcting IMU biases in addition to the PVA-estimates.\\
+    
+    The main drawback of this approach is that the INS alone is not able to aid the GNSS receiver when the effective number of satellites fall below four, as the GNSS filter will have no solution. In addition, as the Kalman filter assumes the measurement noise to be uncorrelated, the time correlated outputs of the GNSS Kalman filter impair system performance when used as measurements in the integration filter, \cite{groves2013principles}.
+    
+    \subsubsection{Tight coupling}
+    %RTK: Tightly integrating INS with RTK measurements can result in a more robust system by decreasing the ambiguity resolution search space as aiding the detection of cycle slips \cite{li2017tightly}.
+    The tightly integrated approach has no stand-alone GNSS solution, instead utilizing raw measurements from both an INS and a GNSS receiver in a single integration function. This approach does not suffer from the measurement bias introduced in a loosely coupled system, and the GNSS can still aid the INS even when fewer than four satellites are available. This approach tends to perform significantly better than the loosely coupled integration, even when based on the same hardware \cite{falco2017loose, tawk2014implementation, groves2013principles}. 
+    %Integrity - security. Remove specific satellites
+
+    \missingfigure{Tightly integrated}
+    Figure \ref{fig:tightly_coupled} shows a tightly coupled integration architecture. Note that no Kalman filter is connected to the GNSS except for the integration filter, which utilizes the GNSS observables directly.\\
+
+    \subsubsection{Other integration strategies}
+    With access to a GNSS receivers firmware integration can be done \textit{ultra-tight}. 
+    \todo{Explain ultra tight}
+    \todo{Mention uncoupled}
+    
+    \subsubsection{Feedback versus open loop}
+    
+    
+\subsection{Kalman Filter}
+%Estimates normal distribution, with the expected values representing the state and a covariance matrix that is propagated in step-wise, recursive computations.
+    
+The linear Kalman filter assumes that the error covariance follows a normal distribution. This assumption fails for non-linear systems, as it is necessary that the Kalman Filter maintains linear error covariance propagation functions. The Extended Kalman Filter solves this problem by applying linearized models to the covariance equations, while maintaining the nonlinear for predictions and residuals. It should be noted that the extended case is not optimal, and the filter may diverge for inaccurate process models or poor initial state or covariance estimates. \missingfigure[]{Confidence area (EKF)} \\
+
+%Different noise modeleling can help. Model unconverged as extra large noise
+%Confidence area should be an ellipsoid (The cause of the divergence of the Extended Kalman Filter is that, after some iterations, the actual state vector gets out of the ellipsoid that approximates the confidence area of the real state vector)
+%https://www.ice.csic.es/files/perea/perea2006.pdf highly non-linear systems \\
+
+    \subsubsection{Indirect implementation}
+    Instead of having the filter estimate a state vector directly, it can be beneficial to integrate high frequency IMU measurements into a nominal state outside of the filter. This state vector is nominal in the sense that it ignores model imperfections and noise terms, which will eventually accumulate. Gaussian distributions of the accumulated errors can then be estimated in the Kalman filter, and their means injected into the nominal state. If the error state can be estimated and injected reasonably fast compared to the system dynamics, it can be assumed that accumulated errors are small in each correction step. In other words, the error state will operate close to the origin. and second order terms can be neglected, leading to simpler models and calculations. \\
+        
+    When estimating the attitude of a body that may experience any orientation, a globally non-singular representation should be used for the nominal state. However, as the error state is assumed to operate close to the origin, far from any singularities, a minimal representation can be applied. This is beneficial in the case of the quaternion, as the redundant representation leads to a rank-deficient covariance, due to the unit constraint \cite{markley2003attitude}. Another benefit of the indirect filter, is that all the large-signal dynamics are integrated in the nominal state and corrections can therefore be applied at a lower rate than predictions \cite{sola2017quaternion}. For GNSS/INS integration, this is usually the case, where GNSS observables, used for corrections, arrive at a much lower frequency than INS measurements.
+    
+    \subsubsection{Multiplicative Extended Kalman Filter}
+    \todo{Add PVA to abbrev}
+    \todo{MEKF not necessarily indirect}
+    The MEKF is a special implementation of an indirect EKF, used for PVA estimation. Error estimates are injected into the state estimate through through addition for all estimates except attitude, as adding the attitude error to the attitude estimate violates the quaternion unit constraint. By creating an error quaternion and injecting through the quaternion product operator, the quaternion estimate will only deviate from the unit constraint as numerical errors grow.
+
+\todo{Use table?}
+%\cite{kruglov2017modified}
+\subsection{Attitude parametrizations}
+There are numerous ways of representing attitude, a few interesting options will be looked into. \todo{Add more here. Talk about vectorial presentations and so on}
+
+    \paragraph{Rotation vector}
+    Following from Euler's theorem, the rotation of a rigid body can be described as the rotation by an angle $\phi$ about some axis. 
+
+    \paragraph{Euler angles}
+    An alternative to the vector parametrization approach are the Euler angles. Instead of using a single axis, the euler angles describe rotation as three \textit{simple rotations}; Three consecutive rotations about the basis vectors of some coordinate system. 
+
+    \paragraph{Quaternions} \todo{Rewrite}
+    It has been proved that no three dimensional parametrization of rotation can be globally nonsingular \cite{stuelpnagel1964parametrization}. The unit quaternion has the lowest dimensionality required for a globally nonsingular parametrization \cite{markley2003attitude}, and is represented as a four dimensional vector. It is also numerically efficient as the rotation of any vector is achieved through linear matrix multiplication \todo{Cite appendix?}. \\
+    
+    The rotation matrix of a quaternion $ \boldsymbol{q} = \begin{bmatrix} \eta & \bm{\varepsilon}\\ \end{bmatrix}^T$ can be written as \cite{fossen2011handbook}
+    \begin{equation}
+        \label{eq:quatRotMat}
+        R_{\eta,\bm{\varepsilon}} = \bm{I_{3x3}} + 2\eta\bm{S}(\bm{\varepsilon}) + 2\bm{S}^2(\bm{\varepsilon})
+    \end{equation}
+
+    Using the relationship $\bm{S}(-\bm{\varepsilon}) = -\bm{S(\bm{\varepsilon})}$, it is evident that quaternions over-parametrize the rotation, as both $\bm{q}$ and $\bm{-q}$ represent the same rotation matrix. For this reason, it is customary to set the restriction $\eta > 0$ \cite{markley2003attitude}.
+
+    \paragraph{Gibbs vector}
+    The Gibbs vector is a projection of the quaternion space defined as
+    \begin{equation}
+        \label{eq:gibbs}
+        \bm{g} \equiv \frac{\bm{\varepsilon}}{\eta}
+    \end{equation}
+    This is again a 2-1 mapping, where the Gibbs vector maps $\bm{q}$ and $\bm{-q}$ to the same point. However, because of the quaternion overparametrization, the resulting mapping is 1-1 for all rotations in the Euclidean space E3. The Gibbs vector introduces a singularity for $\eta = 0$, tending to infinity around this point, corresponding to a rotation of $180\degree$.
+
+    \paragraph{Modified Rodrigues parameters}
+    Fairly similar to the Gibbs vector, the modified Rodrigues parameters are defined as
+    \begin{equation}
+        \label{eq:modRodrigues}
+        \bm{p} \equiv \frac{\bm{\varepsilon}}{\eta + 1}
+    \end{equation}
+
+
+
+
+
+%Structure
+    % 1 - Motivation
+    %     + Improving state estimation
+    % 2 - Architectures
+    %     + Loose
+    %     + Tight
+    %     + Ultra tight
+    %     + Feedback vs open loop
+    % 3 - Kalman filter
+    %     + KF / EKF
+    %       - Indirect implementation
+    %           - Orientations state minimal. No over-parametrization
+    %           - Operating close to the origin. Far away from singularities
+    %           - Always small. Second-order products negligible
+    %           - Error dynamics are small. All large dynamics already in nominal state. Can apply
+    %           - corrections at a lower rate than predictions 
+    %           - \cite{sola2017quaternion}
+    %       - MEKF
+    %           - Maintains quaternion unit length
+    %     + Nonlinear observer(?)
+    % 4 - Parametrizations
+    %     + Vector-angle
+    %     + Euler
+    %     + Quaternion (Linear diff. eq. No EKF divergence)
+    %     + Gibbs
+    %     + Modified Rodrigues
+
+%% Notes and keywords
+% x The state variables in the KF is assumed to follow a normal distribution. 
+% - Errors not assumed to be taken from normal dist. but yields exact joint prob. if so
+% - No need to include earth rotation or bias rates if the resolution of the IMU is less than 10^-3 or so. (Assumed to be noise)
+% - Tune Q and R by autocovariance least squares
+% - Markov assumption: Initial state and noise vectors are mutually independent.
+% - The Joseph form guarantees P to remain symmetric
+% - Quaternions: 4 dim representation with 3 dof -> P singular or rank deficient. Euler angles has singularities. Avoid using trigonometric functions
+% - Global vs local frame,
