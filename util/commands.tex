@@ -7,23 +7,57 @@
 
 %math
 \newcommand{\at}[2][]{#1|_{#2}}
-
+\newcommand{\pr}{P}
+\newcommand{\range}{r}
+\newcommand{\zeros}[2]{\bm{0}_{#1\times#2}}
 \newcommand{\partialdiff}[2]{\frac{\partial #1}{\partial #2}}
-
 \newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
-
-\newcommand{\omgbe}{\bm{\omega_{b/e}^b}}
-
+\newcommand{\omgbe}{\bm{\omega_{be}^b}}
+\newcommand{\omgie}{\bm{\omega}_{ie}^e}
 \newcommand{\half}{\frac{1}{2}}
-
+\newcommand{\fimu}{\bm{f}_{IMU}^b}
+\newcommand{\rot}[2]{\bm{R}^#1_#2}
+\newcommand{\eb}[1]{\bm{#1}^e_{be}}
+\newcommand{\ebd}[1]{\bm{\dot{#1}}^e_{be}}
 \newcommand{\bmeps}{\bm{\varepsilon}}
 \newcommand{\bmeta}{\bm{\eta}}
-\newcommand{\eye}[1]{\bm{I_{#1x#1}}}
-\newcommand{\xkn}{\bm{x_{k+1}}}
-\newcommand{\xk}{\bm{x_k}}
-\newcommand{\Pkn}{\bm{P_{k+1}}}
-\newcommand{\Pk}{\bm{P_k}}
-\newcommand{\atk}[1]{\bm{#1_k}}
-\newcommand{\atkn}[1]{\bm{#1_{k+1}}}
+\newcommand{\eye}[1]{\bm{I}_{#1\times#1}}
+\newcommand{\xkn}{\hat{\bm{x}}_{k+1}}
+\newcommand{\xk}{\hat{\bm{x}}_k}
+\newcommand{\xkp}{\hat{\bm{x}}_{k-1}}
+\newcommand{\Pkn}{\bm{P}_{k+1}}
+\newcommand{\Pk}{\bm{P}_k}
+\newcommand{\atk}[1]{\bm{#1}_k}
+\newcommand{\atkn}[1]{\bm{#1}_{k+1}}
+\newcommand{\atkp}[1]{\bm{#1}_{k-1}}
 \newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\cps}{c(\psi)}
+\newcommand{\cth}{c(\theta)}
+\newcommand{\cph}{c(\phi)}
+\newcommand{\sps}{s(\psi)}
+\newcommand{\sth}{s(\theta)}
+\newcommand{\sph}{s(\phi)}
+
+%State vector
+\newcommand{\pos}{\hat{\bm{p}}^e_{be}}
+\newcommand{\vel}{\hat{\bm{v}}^e_{be}}
+\newcommand{\bias}{\hat{\beta}}
+\newcommand{\biasdot}{{\hat{\beta}_d}}
+
+\newcommand{\posd}{\dot{\hat{\bm{p}}}^e_{be}}
+\newcommand{\veld}{\dot{\hat{\bm{v}}}^e_{be}}
+\newcommand{\biasd}{\dot{\bias}}
+\newcommand{\biasdotd}{\dot{\hat{\beta}}_d}
+
+%\AtBeginEnvironment{algorithm}{\algoequations}
+%\AtEndEnvironment{algorithm}{\restoreequations}
+%\newcounter{algosavedequation}
+%\newcommand{\algoequations}{%
+%  \setcounter{algosavedequation}{\value{equation}}%
+%  \setcounter{equation}{0}%
+%  \renewcommand{\theequation}{Alg\thealgocf.\arabic{equation}}%
+%}
+%\newcommand{\restoreequations}{%
+%  \setcounter{equation}{\value{algosavedequation}}%
+%}
 %\newcommand{\skew}[1]{\bm{S(#1)}} \todo{Fix}

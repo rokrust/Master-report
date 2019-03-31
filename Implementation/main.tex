@@ -2,36 +2,27 @@
 \label{ch:implementation}
 
 %%% INTRO %%%
+This chapter presents a tightly coupled extended Kalman filter estimating position and velocity from acceleration, pseudo-range and Doppler shift measurements. A mathematical derivation of the filter model is shown first, followed by an overview of the DUNE implementation. The hardware running the implementation is then presented before the chapter ends with an overview of the testing and tuning process.
 
-%%% FILTER DESCRIPTION %%%
 \section{Extended Kalman filter}
-\label{seq:EKF-Imp}
+\label{sec:imp:ekf}
     \subimport{Implementation/}{EKF.tex}
-
-%%% DUNE %%%
-\section{Simulators and testing}
-    \subimport{Implementation/}{Simulators.tex}
 
 \section{DUNE implementation}
     \subimport{Implementation/}{Dune.tex}
 
+%\section{Testing and tuning}
+%    \label{sec:imp:simulator}
+%    \subimport{Implementation/}{Simulators.tex}
+
 \section{Embedded Platform}
     \subimport{Implementation/}{Hardware.tex}
 
+\section{Testing}
+    \subimport{Implementation/}{testing.tex}
         
 
 %introduction
-%   + Quick word about LSTS: 
-%       - dune
-%           Task/Thread based
-%       - imc 
-%       - neptus
-%           Supports real time plotting
-%       - glued
-%           http://uavlab.itk.ntnu.no/wiki/doku.php?id=software:glued_details
-%           Minimal Linux operating system for embedded hardware
-%           Listens to IMC
-%       - Mention vendor libs: RTKLIB
 %   + ?MavProxy
 %   Hardware and control
 %   + Mention hardware package: BBB, Pixhawk, ArduPilot

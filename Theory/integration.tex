@@ -3,45 +3,50 @@
 %https://brage.bibsys.no/xmlui/bitstream/handle/11250/260353/435939_FULLTEXT01.pdf?sequence=3&isAllowed=y Model/methods
 %https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20020060647.pdf
 
-%Tightly integrating INS with RTK measurements can result in a more robust system by decreasing the ambiguity resolution search space as aiding the detection of cycle slips \cite{li2017tightly}.
-%\todo{Add mechanization equations. Explain imu bias and range bias/bias rate}
-%\todo{Add earth rotation too?}
+
 
 \subsection{Architectures}
-    \todo{Add fillertext: There are different ways of integrating measurements. "coupledness"}
-    \subsubsection{Loose coupling}
-    \missingfigure{Loosely integrated}
-    A loosely integrated system is a highly modular and simple way of implementing GNSS/INS integration, shown in figure \ref{fig:loosely_coupled}. In this scheme, raw GNSS and IMU data are handled independently to obtain separate PVA estimates. Integrated estimates can then be obtained through an integration function, such as a Kalman filter or nonlinear observer, to provide an improved solution \cite{book:Noureldin}. This type of system is usually implemented closed loop by estimating and correcting IMU biases in addition to the PVA-estimates.\\
+    When integrating GNSS and INS data, the concept of \textit{coupledness} is important to consider. How coupled an integration architecture is describes its complexity with respect to which measurements are used \cite{groves2013principles, noureldin2012fundamentals}. Although different terms are found in the literature, the most widely used are \textit{loosely coupled}, \textit{tightly coupled} and \textit{deep integration}, as described in \cite{groves2013principles}. The integration filter output does not necessarily represent the actual state. In the indirect, or error state, filter error estimates of the INS solution is output instead. Further, if these error estimates are applied directly to the INS state estimate, the integration filter is said to be \textit{open loop}. The alternative is to supply the corrections as input to the INS, and is known as a \textit{closed loop} system.
     
-    The main drawback of this approach is that the INS alone is not able to aid the GNSS receiver when the effective number of satellites fall below four, as the GNSS filter will have no solution. In addition, as the Kalman filter assumes the measurement noise to be uncorrelated, the time correlated outputs of the GNSS Kalman filter impair system performance when used as measurements in the integration filter, \cite{groves2013principles}.
+    \subsubsection{Loosely coupled}
+    A loosely integrated system favors modularity and simplicity for GNSS/INS integration, as shown in figure \ref{fig:loosely_coupled}. In this scheme, GNSS state estimates are used as measurement inputs to the integration filter, along with either raw IMU measurements or an INS state estimate. \\
     
-    \subsubsection{Tight coupling}
+    \begin{figure}
+        \centering
+        \includegraphics[scale=0.8]{Theory/bilder/loosely-coupled.pdf}
+        \caption{A loosely coupled, closed loop system}
+        \label{fig:loosely_coupled}
+    \end{figure}
+    
+    The main drawback of this approach is that it tends to lead to cascaded Kalman filters. Because the estimates of a Kalman filter is based on propagation of earlier filter parameters, errors will be correlated in time. When the integration filter is implemented as a Kalman filter, it assumes that measurements are uncorrelated with respect to time, which is violated if the GNSS receiver implements a Kalman filter itself. This can significantly slow down the estimation of INS errors \cite{groves2013principles}. Another problems lies in the fact that the GNSS receiver will output no solution when the effective number of satellites fall below four. However, during normal operation the redundancy offered by the separate INS and GNSS solutions will maintain valid estimates even if the integration filter should fail.
+    
+    \subsubsection{Tightly coupled}
     %RTK: Tightly integrating INS with RTK measurements can result in a more robust system by decreasing the ambiguity resolution search space as aiding the detection of cycle slips \cite{li2017tightly}.
-    The tightly integrated approach has no stand-alone GNSS solution, instead utilizing raw measurements from both an INS and a GNSS receiver in a single integration function. This approach does not suffer from the measurement bias introduced in a loosely coupled system, and the GNSS can still aid the INS even when fewer than four satellites are available. This approach tends to perform significantly better than the loosely coupled integration, even when based on the same hardware \cite{falco2017loose, tawk2014implementation, groves2013principles}. 
-    %Integrity - security. Remove specific satellites
+    The tightly integrated approach has no stand-alone GNSS solution, instead utilizing raw measurements from both an INS and a GNSS receiver in a single integration function. This approach does not suffer from the measurement bias introduced in a loosely coupled system, and the GNSS can still aid the INS even when fewer than four satellites are available. This approach tends to perform significantly better than the loosely coupled one, even when based on the same hardware \cite{falco2017loose, tawk2014implementation, groves2013principles}. \\
 
-    \missingfigure{Tightly integrated}
+    \begin{figure}
+        \centering
+        \includegraphics[scale=0.8]{Theory/bilder/tightly-coupled.pdf}
+        \caption{A tightly coupled, direct integration filter}
+        \label{fig:tightly_coupled}
+    \end{figure}
     Figure \ref{fig:tightly_coupled} shows a tightly coupled integration architecture. Note that no Kalman filter is connected to the GNSS except for the integration filter, which utilizes the GNSS observables directly.\\
 
-    \subsubsection{Other integration strategies}
-    With access to a GNSS receivers firmware integration can be done \textit{ultra-tight}. 
-    \todo{Explain ultra tight}
-    \todo{Mention uncoupled}
-    
-    \subsubsection{Feedback versus open loop}
+    \subsubsection{Deeply coupled}
+    With access to a GNSS receivers firmware integration can be done \textit{ultra-tight}. This further couples the INS and GNSS receiver by using the INS to aid the receiver in signal tracking.
     
     
-\subsection{Kalman Filter}
+\subsection{Extended Kalman Filter}
 %Estimates normal distribution, with the expected values representing the state and a covariance matrix that is propagated in step-wise, recursive computations.
     
-The linear Kalman filter assumes that the error covariance follows a normal distribution. This assumption fails for non-linear systems, as it is necessary that the Kalman Filter maintains linear error covariance propagation functions. The Extended Kalman Filter solves this problem by applying linearized models to the covariance equations, while maintaining the nonlinear for predictions and residuals. It should be noted that the extended case is not optimal, and the filter may diverge for inaccurate process models or poor initial state or covariance estimates. \missingfigure[]{Confidence area (EKF)} \\
+The linear Kalman filter assumes that the error covariance follows a normal distribution. This assumption fails for non-linear systems. The Extended Kalman Filter solves this problem by applying linearized models to the covariance equations, while maintaining the nonlinear model for prediction and residual calculations. It should be noted that the extended case is not optimal, and the filter may diverge for inaccurate process models or poor initial state or error covariance estimates. \missingfigure[]{Confidence area (EKF)} %https://www.cbcity.de/das-extended-kalman-filter-einfach-erklaert\\
 
 %Different noise modeleling can help. Model unconverged as extra large noise
 %Confidence area should be an ellipsoid (The cause of the divergence of the Extended Kalman Filter is that, after some iterations, the actual state vector gets out of the ellipsoid that approximates the confidence area of the real state vector)
 %https://www.ice.csic.es/files/perea/perea2006.pdf highly non-linear systems \\
 
     \subsubsection{Indirect implementation}
-    Instead of having the filter estimate a state vector directly, it can be beneficial to integrate high frequency IMU measurements into a nominal state outside of the filter. This state vector is nominal in the sense that it ignores model imperfections and noise terms, which will eventually accumulate. Gaussian distributions of the accumulated errors can then be estimated in the Kalman filter, and their means injected into the nominal state. If the error state can be estimated and injected reasonably fast compared to the system dynamics, it can be assumed that accumulated errors are small in each correction step. In other words, the error state will operate close to the origin. and second order terms can be neglected, leading to simpler models and calculations. \\
+    Instead of having the filter estimate a state vector directly, it can be beneficial to integrate high frequency IMU measurements into a nominal state outside of the filter. This state vector is nominal in the sense that it ignores model imperfections and noise terms, which will eventually accumulate. Gaussian distributions of the accumulated errors can then be estimated in the Kalman filter, and their means injected into the nominal state. If the error state can be estimated and injected reasonably fast compared to the system dynamics, it can be assumed that accumulated errors are small in each correction step. In other words, the error state will operate close to the origin. and second order terms can be neglected, leading to simpler models and calculations \cite{sola2017quaternion}.\\
         
     When estimating the attitude of a body that may experience any orientation, a globally non-singular representation should be used for the nominal state. However, as the error state is assumed to operate close to the origin, far from any singularities, a minimal representation can be applied. This is beneficial in the case of the quaternion, as the redundant representation leads to a rank-deficient covariance, due to the unit constraint \cite{markley2003attitude}. Another benefit of the indirect filter, is that all the large-signal dynamics are integrated in the nominal state and corrections can therefore be applied at a lower rate than predictions \cite{sola2017quaternion}. For GNSS/INS integration, this is usually the case, where GNSS observables, used for corrections, arrive at a much lower frequency than INS measurements.
     

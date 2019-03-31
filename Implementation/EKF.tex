@@ -1,25 +1,194 @@
+The chosen integration filter of this thesis is a simple direct state extended Kalman filter. Before the implementation is presented, the EKF equations are shown.
 \subsection{Equations} \todo{Rename}
-    \paragraph{Initial conditions}
+    The discrete time extended Kalman filter method can be divided into a prediction step, based on the state model, and a measurement step as follows.
     \paragraph{Prediction}
     \todo{Fix equations}
     \begin{align}
-        \xkn^- &= \bm{f(\xk, u_k)}\\
-        \atkn{P}^- &= \atk{\phi}\atk{P}_{-1}\atk{\phi}^T + \atk{Q}
+        \intertext{The next state estimate is predicted based on the system model}
+        \xk^- &= \bm{f(\xkp, \atkp{u})}\\
+        \intertext{The error covariance is propagated a priori based on the linearized model and process noise covariance}
+        \atk{P}^- &= \atk{\Phi}\atkp{P}\atk{\Phi}^T + \atk{Q}
     \end{align}
     
     \paragraph{Measurement}
     \begin{align}
+        \intertext{The measurement step estimates an incoming set of measurements and calculates a measurement residual, $\atk{z}$, and its covariance, $\atk{S}$}
+        \atk{z} &= \atk{y} - \bm{h}(\xk^-)\\
+        \atk{S} &= \atk{H}\atk{P}^-\atk{H}^T+\atk{R}\\
+        \intertext{The posterior state estimate, $\xk$ is calculated based on the average of the priori state and measurement residual weighted by the Kalman gain $\atk{K}$}
+        \atk{K} &= \atk{P}^-\atk{H}^T\atk{S}^{-1}\\
+        \xk     &= \xk^- + \atk{K}\atk{z}\\
+        \intertext{The error covariance is then updated. This form of the update is known as the Joseph form and avoids potential problems with numerical stability}
+        \atk{P} &= (\eye{n} - \atk{K}\atk{H})\atk{P}^-(\eye{n} - \atk{K}\atk{H})^T + \atk{K}\atk{R}\atk{K}^T
     \end{align}
     
-    
 \subsection{Model description}
-\subsubsection{Measurement model}
-\subsubsection{Prediction model}
-\subsubsection{Discretization}
-    \cite{van1978computing}
-\subsubsection{Linearization}
+    %Describe state 
+    The implemented model estimates position, velocity in the ECEF frame of reference and receiver clock bias and receiver clock bias rate. This leads to the state space vector
+    \begin{equation}
+        \bm{x} = 
+        \begin{bmatrix}
+            \pos\\[6pt]
+            \vel\\[6pt]
+            \bias\\[6pt]
+            \biasdot
+        \end{bmatrix}
+    \end{equation}
+    
+    %The gravity vector in the NED frame is assumed constant as 
+    %\begin{equation}
+    %    \label{def:gn}
+    %    \mathbf{g}_n =
+    %    \begin{bmatrix}
+    %        0 & 0 & 9.80665
+    %    \end{bmatrix}^T
+    %    [\frac{m}{s^2}]
+    %\end{equation}
+    
+\todo{Position and velocity in ECEF}
 
-\subsubsection{Filter tuning}
+\subsubsection{Measurement model}
+    The EKF measurement vector is 
+    \begin{equation}
+        y = \begin{bmatrix}P & \dot{P}\end{bmatrix}^T    
+        \label{eq:measurement}
+    \end{equation}
+    composed of the pseudo-range and pseudo-range rate respectively. The measurement model is based on equations \ref{eq:pr-model} and \ref{eq:prr-model}. However, all corrections, except receiver clock bias, are applied outside of the Kalman filter, and are therefore not included in the EKF measurement model. This yields the model
+    \begin{align}
+        \pr       &= \range + \beta + \vartheta\\ \todo{fix notation}
+        \dot{\pr} &= \dot{\range} + \dot{\beta} + \dot{\vartheta}
+    \end{align}
+    
+    The linearized measurement matrix can be split into a pseudo-range and a pseudo-range rate part as follows
+    \begin{equation}
+        \bm{H} = \begin{bmatrix} \bm{H}_{\pr}\\\bm{H}_{\dot{\pr}}\end{bmatrix}
+    \end{equation}
+    Both will now be derived.    
+    
+    \subsubsection*{Pseudo-range}
+    To derive the linearized measurement matrix for the pseudo-range measurements, $\bm{H}_\pr$, the model is first differentiated with respect to the receiver position
+    \begin{align}
+        \begin{split}
+            \partialdiff{\pr}{\pos}   & = \partialdiff{}{\pos}\norm{\bm{p}^e_s - \pos}_2\\   & = -\Bigg(\frac{\bm{p}^e_s - \pos}{\norm{\bm{p}^e_s - \pos}_2}\Bigg)^T = \bm{l}^e^T
+        \end{split}
+        \\[2ex]
+        \intertext{Where $\bm{l}^e^T$ is the line of sight vector between receiver and satellite. Differentiating with respect to the receiver clock bias is trivial}
+        \begin{split}
+            \partialdiff{\pr}{\hat{\beta}}   & = 1
+        \end{split}
+    \end{align}
+    
+    The model does not depend on any other state variables. Given $m$ distinct pseudo-range measurements the matrix form becomes
+    \begin{equation}
+        \bm{H}_\pr =
+        \begin{bmatrix}
+            -\bm{l}_1^e^T & \zeros{1}{3} & 1 & 0\\
+            -\bm{l}_2^e^T & \zeros{1}{3} & 1 & 0\\
+            &\vdots\\
+            -\bm{l}_m^e^T & \zeros{1}{3} & 1 & 0\\
+        \end{bmatrix}
+    \end{equation}
+    
+    \subsubsection*{Pseudo-range rate}
+    Similarly, the pseudo-range rate model is linearized too. From equation \ref{eq:range-rate} it is seen that it depends on both position, velocity and receiver clock bias rate. However, because of the Doppler shift's weak dependence on position, only the velocity and receiver clock bias rate terms are used.
+    
+    \begin{align}
+        \begin{split}
+            \partialdiff{\dot{\pr}}{\vel}   & = \partialdiff{}{\vel}(\bm{v}^e_s - \vel)\bm{l}^e^T = -\bm{l}^e^T
+        \end{split}
+        \\[2ex]
+        \begin{split}
+            \partialdiff{\pr}{\biasdot}   & = 1
+        \end{split}
+    \end{align}
+    
+    The measurement matrix is thus
+    \begin{equation}
+        \bm{H}_\pr =
+        \begin{bmatrix}
+            \zeros{1}{3} & -\bm{l}_1^e^T & 0 & 1\\
+            \zeros{1}{3} & -\bm{l}_2^e^T & 0 & 1\\
+            &\vdots\\
+            \zeros{1}{3} & -\bm{l}_m^e^T & 0 & 1\\
+        \end{bmatrix}
+    \end{equation}
+
+\subsubsection{Prediction model}
+    The acceleration measurement, $\bm{f}^b_{IMU}$, is the input vector of the system and is modeled in the body frame as 
+    \begin{equation}
+        \begin{split}
+            \bm{f}^b_{IMU} = \bm{f}^b_{ib} + \bm{b}_a + \bm{\omega}_a\\
+            \bm{f}^b_{ib} = \bm{f}^b_{IMU} - \bm{b}_a - \bm{\omega}_a
+        \end{split}
+        \label{eq:acc-mes-model}
+    \end{equation}
+    where $\bm{b}_a$ is the bias of the measurement and $\bm{\omega}_a$ is considered Gaussian white noise. Note that the bias is not estimated in this simple filter, but is included in the equations for completeness.
+    
+    \begin{align}
+        \intertext{The time derivative of position is simply defined as the velocity}
+        \posd &= \vel\\
+        \label{eq:pred-vel}
+        \intertext{Rotating the acceleration measurement \ref{eq:acc-mes-model} and adding a Choriolis term to account for earth rotation, the time derivative of the velocity can be written}
+        \veld &= \rot{e}{b}(\fimu - \bm{b}_a) + \bm{g}^e -2\bm{S}(\omgie)\vel\\\todo{fix notation}
+        \label{eq:pred-pos}
+        \intertext{Where the acceleration measurement noise is discarded as it has expected value 0 and the rotation matrix $\rot{e}{b}$ is estimated outside of the filter. The receiver clock bias and its rate is trivial}
+        \biasd &= \biasdot\\
+        \biasdotd &= 0
+    \end{align}
+    
+    %Linearized state matrix
+    As the filter does not estimate the attitude, this prediction model is linear with transition and input matrix
+    \begin{align}
+        \bm{F} &= 
+        \begin{bmatrix}
+            \zeros{3}{3} & \eye{3}          & 0 & 0\\
+            \zeros{3}{3} & -2\bm{S}(\omgie) & 0 & 0\\
+            \zeros{1}{3} & \zeros{1}{3}     & 0 & 1\\
+            \zeros{1}{3} & \zeros{1}{3}     & 0 & 0
+        \end{bmatrix}\\
+        \bm{B} &= 
+        \begin{bmatrix}
+            \zeros{3}{3}\\
+            \rot{e}{b}\\
+            \zeros{1}{3}\\
+            \zeros{1}{3}
+        \end{bmatrix}
+    \end{align}
+    
+\subsubsection{Discretization}
+    Because the filter is implemented on a computer, the dynamics should be discretized. Defining the acceleration vector
+    \begin{align}
+        \bm{a} &:= \rot{e}{b}(\fimu - \bm{b}_a) + \bm{g}^e - 2\bm{S}(\omgie)\eb{\hat{v}}\\
+        \intertext{the prediction model becomes}
+        \eb{\hat{p}} &\leftarrow \eb{\hat{p}} + \eb{\hat{v}}\Delta t + \bm{a}\frac{\Delta t^2}{2}\\
+        \eb{\hat{v}} &\leftarrow \eb{\hat{v}} + \bm{a}\Delta t
+    \end{align}
+    
+    Discretization of the process noise covariance matrix normally requires a rather involved integral to be solved. However, the Van Loan method described by algorithm \ref{alg:vanloan} can be used to find both the discretized state transition matrix and process noise covariance matrices \cite{van1978computing}
+
+    \begin{algorithm}[!htbp]
+        \caption{Van Loan's discretization method}
+	    \label{alg:vanloan}
+        \begin{minipage}{\dimexpr\textwidth-2\algomargin\relax}
+            \begin{enumerate}
+            \item First, form the $2n\times2n$ matrix $\bm{M}$:
+            \begin{equation}
+                \mathbf{M} := \left[\begin{array}{cc}-\mathbf{F} & {\mathbf{Q}} \\ {\mathbf{0}} & {\mathbf{F}^{\top}}\end{array}\right]
+            \end{equation}
+            \item Taking the matrix exponential of $\bm{M}$ yields the following relationship to the discretized system
+            \begin{equation}
+                e^{\mathbf{M} \Delta t} = \left[ \begin{array}{cc}{\cdots} & {\bm{\Phi}_{k}^{-1} \mathbf{Q}_{k}} \\ {0} & {\bm{\Phi}_{k}^{\top}}\end{array}\right]
+            \end{equation}
+            \item $\bm{Q}_k$ is then found from the upper right matrix as
+            \begin{equation}
+                \atk{Q} = \atk{\Phi}\atk{\Phi}^{-1}\atk{Q}
+            \end{equation}
+            \end{enumerate}
+            \vspace{0.1cm}
+        \end{minipage}
+    \end{algorithm}
+\todo{groves p. 283. pseudo-range rates weak dependence on position. Commonly neglected in H}
+
 % R = a*(1/sin(el) + c)
 % Faster convergence e^-ax + e^-bx + c
 

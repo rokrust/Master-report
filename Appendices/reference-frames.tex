@@ -22,3 +22,42 @@
 
 \section{Body}
     The body-fixed reference frame is a moving coordinate system fixed to some craft. Both origin and orientation of the coordinate system is chosen freely \todo{And has in this thesis been set to..}. The body system is denoted \{b\}
+
+\section{Transformations between frames}
+    \subsection{NED and ECEF}
+        \label{app:roten}
+        According to \cite{fossen2011handbook}, the rotation matrix from NED to ECEF is given by 
+        \begin{equation}
+            \label{eq:Ren}
+            R^e_n =
+            \begin{bmatrix}
+                -cos(l)sin(\mu) & -sin(l)   & -cos(l)cos(\mu)\\
+                -sin(l)sin(\mu) & cos(l)    & -sin(l)cos(\mu)\\
+                cos(\mu)       & 0          & -sin(\mu)\\
+            \end{bmatrix}
+        \end{equation}
+        
+        where $l$ denotes latitude and $\mu$ denotes longitude.
+    
+    \subsection{Body and NED}
+        \label{app:rotnb}
+        Given a set of Euler angles $\begin{bmatrix}\phi & \theta & \psi \end{bmatrix}$ denoting the rotation from body to NED, a rotation matrix can be calculated as
+        \begin{equation}
+            \label{eq:Rnb-eul}
+            \mathbf{R}^n_b =
+            \begin{bmatrix}
+                \cps\cth & -\sps\cph+\cps\sth\sph   & \sps\sph+\cps\cph\sth\\
+                \sps\cth & \cps\cph+\sph\sth\sps    & -\cps\sph+\sth\sps\cph\\
+                -\sth    & \cth\sph                 & \cth\cph\\
+            \end{bmatrix}
+        \end{equation}
+        Where $c$ and $s$ is shorthand for the cosine and sine functions, respectively. Alternatively, the rotation matrix can be calculated from the quaternion $\begin{bmatrix}\eta & \varepsilon_1 & \varepsilon_2 & \varepsilon_3 \end{bmatrix}$ as
+        \begin{equation}
+            \label{eq:Rnb-quat}
+            \mathbf{R}^n_b =
+            \begin{bmatrix}
+                1-2(\varepsilon_2^2+\varepsilon_3^2)   &2(\varepsilon_1\varepsilon_2-\varepsilon_3\eta) &2(\varepsilon_1\varepsilon_3+\varepsilon_2\eta)\\
+                2(\varepsilon_1\varepsilon_2+\varepsilon_3\eta)      &1-2(\varepsilon_1^2+\varepsilon_3^2)   &2(\varepsilon_2\varepsilon_3-\varepsilon_1\eta)\\
+                2(\varepsilon_1\varepsilon_3-\varepsilon_2\eta)      &2(\varepsilon_2\varepsilon_3+\varepsilon_1\eta) &1-2(\varepsilon_1^2+\varepsilon_2^2)\\
+            \end{bmatrix}
+        \end{equation}

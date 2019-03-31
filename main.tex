@@ -3,7 +3,7 @@
 \usepackage[toc,page]{appendix}
 \usepackage[T1]{fontenc}
 \usepackage[lmargin=25mm,rmargin=25mm,tmargin=27mm,bmargin=30mm]{geometry}
-\usepackage[]{todonotes}
+\usepackage[disable]{todonotes}
 \usepackage{import}
 \usepackage{graphicx}
 \usepackage{amsmath}
@@ -27,6 +27,9 @@
 \usetikzlibrary{arrows}
 \pgfplotsset{compat=1.15}
 \usepackage{mathrsfs}
+\usepackage{tabularx}
+\usepackage[ruled,vlined]{algorithm2e}
+\usepackage{algcompatible}
 \usetikzlibrary{arrows}
 \definecolor{xdxdff}{rgb}{0.49019607843137253,0.49019607843137253,1}
 \definecolor{ffqqqq}{rgb}{1,0,0}
@@ -37,13 +40,13 @@
 \input{util/commands.tex}
 
 
-\title{Master drafts}
-\author{Øyvind Aukrust Rones}
-\date{November 2018}
+%\title{Master drafts}
+%\author{Øyvind Aukrust Rones}
+%\date{November 2018}
 
 \begin{document}
 \todo{Change document structure (paragraph should add a new line)}
-\maketitle
+%\maketitle
 
 \listoftodos
 \input{Preliminaries/main}

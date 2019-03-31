@@ -43,42 +43,74 @@ The navigation message includes orbital parameters for calculating satellite pos
 %Acquisition
 When a receiver detects the signal of a new satellite, it will try to lock on to it. This is the process of initially aligning the replica PRN code to that of an incoming signal, and is known as signal \textit{acquisition}. When a match is found for a given signal, and hence the signal phase determined, it's assigned a channel in the receiver, maintaining the satellite signal phase, and the \textit{code tracking} process can begin. This is were the pseudo-range measurements comes from; an incoming acquired signal will have lagged behind the replica PRN during the time of transmission, and multiplying the lag time by the speed of light, the pseudo-range is found. \\
 
-The measurement is called \textit{pseudo}-range as it incorporates numerous errors with the true range, and are explained in more detail in section \ref{sec:errors}. This includes both satellite and receiver clock errors, atmospheric delays and relativistic effects as well as others, shown in figure \ref{fig:pr-delay}. The pseudo-range between the receiver and a satellite \textit{i} can be modeled as follows \cite{farrell2008aided}
+The measurement is called \textit{pseudo}-range as it incorporates numerous errors with the true range, and are explained in more detail in section \ref{sec:errors}. This includes both satellite and receiver clock errors, atmospheric delays and relativistic effects as well as others, shown in figure \ref{fig:pr-delay}. The pseudo-range between the receiver and a satellite can be modeled as follows \cite{farrell2008aided}
 \begin{align}
-    P_i &= \rho_i + c(\delta t_r - \Delta t_{sv}_i) + I_r_i + T_r_i + \eta_i\\
-    \intertext{Where $\rho_i$ is the geometric range, $\delta t_r$ the receiver clock error, $\Delta t_{sv}_i$ the satellite clock error, $I_r_i$ the ionospheric delay, $T_r_i$ the tropospheric delay and $\eta_i$ are the unmodeled errors. The geometric range is given by}
-    \rho &= \norm{\bm{p}_r - \bm{p}_i}_2 = \sqrt{(x_r - x_i)^2 + (y_r - y_i)^2 + (z_r - z_i)^2}
-    \intertext{With $\bm{p}_r$ being the receiver position at the time of reception and $\bm{p}_i$ the satellite position at the time of transmission.}
+    P &= \rho + \beta - c\Delta t_{sv} + I_r + T_r + \delta p_{sagnac} + \vartheta\\
+    \label{eq:pr-model}
+    \intertext{Where $\rho$ is the geometric range, $\beta$ is the receiver clock error scaled by the speed of light, $\Delta t_{sv}_i$ the satellite clock error, $I_{r_i}$ the ionospheric delay, $T_{r}$ the tropospheric delay and $\vartheta$ are the unmodeled errors. The geometric range is given by}
+    \rho &= \norm{\bm{p}_r - \bm{p}_s}_2 = \sqrt{(x_r - x_s)^2 + (y_r - y_s)^2 + (z_r - z_s)^2}
+    \intertext{With $\bm{p}_r$ being the receiver position at the time of reception and $\bm{p}_s$ the satellite position at the time of transmission.}
 \end{align}
-
+\todo{fix $\eta$}
 \missingfigure[]{pseudo-range}
 \begin{figure}
     \centering
     \includegraphics{}
-    \caption{Caption}
+    \caption{Pseudo-range with errors}
     \label{fig:pr-delay}
 \end{figure}
 
+\todo{Directly observable brukt riktig?}
 \todo{Mention position estimation 4 sat?}
 %receiver clock bias
 
-
-%Acquisition and tracking. Matching of prn codes
 \subsubsection{Doppler shift}
 \missingfigure[]{Doppler shift}
-% Satellite has high speed. Doppler effect
 % Acquisition requires known doppler, or search through frequency
-% Doppler equation
+During satellite acquisition, the high velocity difference of satellite and receiver introduces a Doppler shift on the carrier wave frequency. Hence, if the Doppler shift is unknown or cannot be otherwise estimated, the acquisition process requires a search along frequency in addition to phase. After acquisition, a rough estimate of the Doppler shift has been found and the receiver starts tracking further changes in the incoming carrier wave frequency. Taking advantage of the fact that the relative motion of satellite and receiver is far below the wave propagation speed, the received frequency is approximated as (\cite{li2011doppler, groves2013principles})
+\begin{align}
+    f_{received} &= 1 - \frac{(\bm{v}^e_{is} - \bm{v}^e_{ir}) \cdot \bm{l}^e_ {r,s}}{c}f_{transmitted}\\
+    %
+    \intertext{Where $\bm{l}^e_ {r,s}$ is the line of sight vector between satellite and receiver. Consequently the Doppler shift is}
+    %
+    \Delta f &= f_{received} - f_{transmitted} = -\frac{(\bm{v}^e_{is} - \bm{v}^e_{ir}) \cdot \bm{l}^e_ {r,s}}{c}f_{transmitted}
+    %
+    \intertext{Multiplying by the transmitted signal wavelength yields the relationship between the range rate and the Doppler shift as}
+    %
+    \dot{\range} &= -\lambda\Delta f = (\bm{v}^e_{is} - \bm{v}^e_{ir}) \cdot \bm{l}^e_ {r,s}
+    \label{eq:range-rate}
+    %
+    \intertext{Where $\lambda$ is the wavelength of the transmitted signal. The model for the pseudo-range rate is}
+    \dot{\pr} &= \dot{\rho} + \dot{\beta} - c\Delta \dot{t}_{{sv}} + \dot{I}_r + \dot{T}_r + \delta \dot{p}_{sagnac} + \dot{\vartheta}
+    %
+    \intertext{However, $\Delta t_{sv}$, $I_r$ and $T_r$ are slowly time varying \cite{farrell2008aided}, simplifying the model to}
+    %
+    \dot{\pr} &= \dot{\range} + \dot{\beta} + \delta \dot{p}_{sagnac} + \dot{\vartheta}
+    \label{eq:prr-model}
+\end{align}
+where $\dot{\eta}_i$ represents the drift of any unmodeled errors.\\
 
+\todo{switch out i subscript with s}
+\todo{Add to nomenclature}
+As the doppler measurement is dependent on receiver velocity, it can be applied to the navigation filter to yield a directly observed receiver velocity estimate. It is also dependent on the line of sight vector, and therefore position, but this dependence is weak \cite{misra2006global, groves2013principles}, and Doppler positioning is rarely used in GNSS position. A weighted least squares approach to PV-estimation is shown in \cite{li2011doppler}, based on pseudo-range and doppler measurements. \cite{shames2011analysis, shames2013doppler} makes an analytical analysis of the number of required measurements for PV-estimation in two dimensions, but states that it is easily generalized to three, albeit with the assumption that measurements are unbiased.
 
+\subsubsection{Carrier Phase}
+The carrier phase measurement will only be mentioned briefly in this thesis, as it has not been used explicitly in the implemented navigation filter. Nonetheless, as these measurements were readily available with the pseudo-range and doppler shift measurements, they were still included in the internal message bus of the system, and is considered a possibility for future additions.\\
 
-\subsubsection{Carrier Phase} \todo{Proper title}
+The low noise of the carrier phase measurement can be taken advantage of by being integrated into a pseduo-range filter. This is known as carrier smoothing and one example is the recursive \textit{Hatch} filter \cite{misra2006global}
+\begin{equation}
+    \Bar{P}_n = \frac{1}{M}P_n + \frac{M-1}{M}(\Bar{P}_{n-1} + \Phi_n - \Phi_{n-1})
+\end{equation}
+Where $\Bar{P}_n$ is the smoothed pseudo-range of iteration n and $\Phi_n$ is the carrier phase measurement given in meters.\\
+
+Carrier phase can also be used to improve velocity estimates. By using time-differenced carrier phase measurements, velocity can be estimated within the order of mm/s, as opposed to the Doppler approach with a resolution in the order of cm/s. This approach is explained further in \cite{freda2015time}.
+
 %Mentioned for completeness, not used in this thesis
 %Carrier smoothing
 
 \subsection{Ephemeris calculations}
 \label{sec:ephemeris}
-The ephemeris and clock correction parameters as well as the accompanying equations are shown in table \ref{tab:ephemeris} and equation set \ref{eq:ephemeris}, respectively. Satellite velocities are needed to estimate receiver velocity from the doppler shift, but the equations are not shown here. For a thorough explanation of these equations the reader is referred to \cite{zhang2006gps}. As opposed to the other GNSS, GLONASS does not broadcast any Keplerian parameters, but rather position, velocity and acceleration in the ECEF frame are broadcast directly. \cite{groves2013principles}\\
+The ephemeris and clock correction parameters as well as the accompanying equations are shown in table \ref{tab:ephemeris} and equation set \ref{eq:ephemeris}, respectively. Satellite velocities are needed to estimate receiver velocity from the doppler shift, but the equations are not shown here. \cite{zhang2006gps} derives equations for calculating satellite velocity, but concludes that a simple two point numerical differentiation is precise to the order of millimeters. The latter approach is used by RTKLIB (section \ref{sec:rtklib}) and consequently in this thesis as well. As opposed to the other GNSS, GLONASS does not broadcast any Keplerian parameters, rather broadcasting ECEF position, velocity and acceleration directly. \cite{groves2013principles}\\
 
 \subsubsection{Ephemeris equations}
 \todo{Move to appendix}
@@ -206,7 +238,24 @@ Several parameters are needed to calculate clock error and satellite position. H
 	\end{align}
 \end{subequations}
 
-\subsection{Error sources} \todo{proper title}
+\subsection{Error sources}
+\label{sec:errors}
+Several errors have to be handled when dealing with GNSS positioning. The errors considered in this thesis are given in table \ref{tab:errors} with typical magnitudes as stated in \cite{schuler2001ground, misra2006global, pascual2007introducing, groves2013principles, matsakis2007timing}, and will be further explained.
+\begin{table}[!htbp]
+    \centering
+    \begin{tabular}{|c|c|}
+        \multicolumn{2}{c}{\textbf{Error sources}}\\\hline
+        Ionospheric     & 16-27 m\\\hline
+        Tropospheric    & 2.5-5 m\\\hline
+        Ephemeris       & 1-5 m\\\hline
+        Multipath       & statistic error, but up to 100 m in extreme cases\\\hline
+        Group delay     & 1-2.5 m \\\hline
+        Earth rotation  & 10-40 m\\\hline
+        Relativistic    & 0-13 m\\\hline
+    \end{tabular}
+    \caption{GNSS typical error magnitudes}
+    \label{tab:errors}
+\end{table}
 \subsubsection{Atmospheric errors}
 When the GPS signals are transmitted through the atmosphere, the GPS's assumption that the signals travel in a straight line at constant speed no longer holds. The change in signal speed is much more significant than the effect on the signal path \cite{farrell2008aided} and is represented by the refractive index:
 
@@ -228,6 +277,7 @@ To model the atmospheric delay the atmosphere is divided into two layers. The io
 Typical ionospheric and tropospheric delays with respect to elevation angle are shown in figure \ref{fig:atmo_elev_error}. 
 
 \paragraph{Ionospheric error}
+\todo{Other frequencies must be scaled}
 The ionospheric error is a result of free ions and positively charged molecules in the ionosphere. The level of ionization depends on solar activity, seasons and time-of-day which directly affects the speed and travel time of GPS-signals, thereby resulting in an error in the range measured at the receiver. There are several ways of combating this, however. One approach is to take advantage of the fact that the ionosphere is dispersive by using a dual-frequency receiver. The residual ionospheric error in a dual-frequency receiver is in the order of 0.1 m \cite{groves2013principles}, and is the main reason the GPS employs two frequencies. Most receivers only use the L1 frequency however and must estimate the error through a secondary receiver or by mathematical models, such as the NeQuick \cite{di1990analytical} or Klobuchar models \cite{klobuchar1987ionospheric}. The latter is used by the GPS, and the external parameters needed by the receiver is transmitted in the almanac, while also being a function of the receiver position, satellite azimuth and elevation. Galileo uses the former while GLONASS does not broadcast any ionospheric model parameters \cite{groves2013principles}. The Klobuchar ionospheric model is shown in appendix \ref{app:klobuchar}.\\
 
 \paragraph{Tropospheric}
@@ -264,7 +314,6 @@ The clock correction polynomial, equation \ref{eq:eph_corr_time}, is incorporate
 For the modernized GPS, the civillian signals will include an additional correction called the \textit{inter-signal correction} \cite{spec:gps-new}.
 %Delay between L1 and L2?
 
-\todo{write something}
 
 \subsubsection{Earth rotation}
 When working with the non-inertial ECEF frame, it is important to consider earth rotation during signal transmission. The ephemeris equations of \ref{sec:eph_equations} calculates satellite positions as a function of time, in the ECEF frame of that instant, while the receiver, on the other hand, estimates its position with respect to the ECEF frame at the time of signal reception. In other words, as illustrated in figure \ref{fig:sagnac}, the positions are expressed with respect to two separate coordinate frames. These must be aligned, as neglecting this may otherwise result in a significant east-west error of as much 41 meters at the equator \cite{groves2013principles}.\\
@@ -316,9 +365,9 @@ The non-inertial frame will also affect the range rate measurements with an erro
     \delta\dot{\rho}_{sagnac} \approx \frac{\omega_{ie}}{c}(v^{e(t_t)}_{s}x^{e(t_r)}_{r} + u^{e(t_r)}_{r}y^{e(t_t)}_{s}-u^{e(t_t)}_{s}y^{e(t_r)}_{r}-x^{e(t_t)}_{s}v^{e(t_r)}_{r})
 \end{equation}
 \todo{Add this to definitions/nomenclature}
-Where $u$ and $v$ denote the $x$ and $y$ component of velocity.
+Where $u$ and $v$ denote the $x$ and $y$ component of receiver and satellite velocity vector.
 
-\subsubsection{Relativistic errors} \todo{Fiks denne}
+\subsubsection{Relativistic errors}
 Due to the high speeds and different gravity potential from the high orbit of the satellites, relativistic effects influences the satellite clock frequencies. This effect can be split into a constant frequency component from the satellite's nominal orbit, modified in factory, and a periodic frequency component due to the eccentricity of the orbit. The periodic component must be compensated for by the receiver, as described in section \ref{sec:ephemeris}, or it could lead to a worst case error of close to 13 meters, \cite{misra2006global}.\\
 
-Without the constant frequency correction applied, the difference in observed frequencies would accumulate to a clock error of approximately $38 \mu s$ a day, leading to a navigation error of approximately 11 km, \cite{pascual2007introducing}\todo{check article and add to source or find new source}.
+Without the constant frequency correction applied, the difference in observed frequencies would accumulate to a clock error of approximately $38 \mu s$ a day, equivalent to a navigation error of approximately 11 km \cite{pascual2007introducing}
