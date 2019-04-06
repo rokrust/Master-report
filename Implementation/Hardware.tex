@@ -1,8 +1,15 @@
-    The DUNE implementation runs on a BeagleBone Black Industrial (BBB), pictured in figure \ref{fig:bbb}. A cape is connected to the BeagleBone, in turn connected to both a GNSS receiver, and a Pixhawk 2.1 (also called The Cube flight controller). The Pixhawk has another GNSS receiver and a magnetometer connected to it. The full payload sits conveniently in a peli case housing an ethernet router.\\
+    The DUNE implementation runs on a BeagleBone Black Industrial (BBB), pictured in figure \ref{fig:bbb}. A cape is connected to the BeagleBone, in turn connected to both a GNSS receiver, and a Pixhawk 2.1 (also called The Cube flight controller). The Pixhawk has another GNSS receiver and a magnetometer connected to it. The full payload sits conveniently in a peli case. A simple block diagram illustrates this in figure \ref{fig:hardware-connection-diagram}\\
+    
+    \begin{figure}
+        \centering
+        \includegraphics{Implementation/Images/hardware-schematic.pdf}
+        \caption{Block diagram of the hardware package}
+        \label{fig:hardware-connection-diagram}
+    \end{figure}
     
     \subsubsection{BeagleBone}
     %BBB
-    The BeagleBone Black is a powerful embedded computer board capable of running several different operating systems, such as Ubuntu. It contains both USB, HDMI mini and Ethernet ports, as well as pin headers with both UART, SPI and I2C. By default the BeagleBone comes with a stripped down linux distribution called Angstrom, but it has been flashed with the Glued linux distribution through the onboard SD-card. The BeagleBone can be controlled by SSH over the ethernet port, where the user can start or stop processes, modify configuration files or transfer data to or from the BeagleBone. The router in the case provides the user with additional ethernet ports and a DHCP server to simplify the connection process.\todo{DHCP verify}
+    The BeagleBone Black is a powerful embedded computer board capable of running several different operating systems, such as Ubuntu. It contains both USB, HDMI mini and Ethernet ports, as well as pin headers with both UART, SPI and I2C. By default the BeagleBone comes with a stripped down linux distribution called Angstrom, but it has been flashed with the Glued linux distribution through the onboard SD-card. The BeagleBone can be controlled by SSH over the ethernet port, where the user can start or stop processes, modify configuration files or transfer data to or from the BeagleBone. The router in the case provides the user with additional ethernet ports and a DHCP server to simplify the connection process.\\
     
     \todo{fix figure BBB}
     \begin{figure}

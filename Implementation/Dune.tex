@@ -8,7 +8,7 @@ For the system running on hardware, two DUNE tasks have been implemented. One ta
     \begin{figure}[!htbp]
     \centering
     \includegraphics[scale=0.8]{Implementation/Images/dune-tasks.pdf}
-    \caption{Overview of the EKF and the tasks it communicates with. Each box is a distinct task. The tasks are color coded as follows; The blue boxes are tasks used for the simulator (section \ref{sec:imp:simulator}), while the red ones run on hardware. The EKF task depends only on the IMC-messages and runs regardless of either profile.}
+    \caption[Block diagram of the implemented system]{Overview of the EKF and the tasks it communicates with. Each box is a distinct task. The tasks are color coded as follows; The blue boxes are tasks used for the simulator (section \ref{sec:imp:simulator}), while the red ones run on hardware. The EKF task depends only on the IMC-messages and runs regardless of either profile.}
     \label{fig:dune-tasks}
     \end{figure}
 
@@ -17,7 +17,8 @@ For the system running on hardware, two DUNE tasks have been implemented. One ta
     %Handles rtklib config and cmd files
     %Can play back log files as mentioned in section \ref{sec:imp:simulators}
     %Unwanted features of rtkrcv. State estimation, terminal, sat stats, stream stats
-    The main purpose of the RTKLIB task is to read GNSS measurements from a stream and dispatch these on the IMC bus. It is based on the RTKLIB commandline program rtkrcv, and keeps much of the same functionality, with a few notable exceptions. The task is configured through a configuration file, also called a conf file, and can configure a connected serial device based on receiver configuration file, also called a CMD file. Measurements can be read from different sources, such as log files or serial devices, and, if specified in the conf file, they can be logged in different file formats as well. Unlike the rtkrcv program however, the task does not estimate any state variables, it does not run separately in a terminal and can not output any kind of status screens.\\
+    The main purpose of the RTKLIB task is to read GNSS measurements from a stream and dispatch these on the IMC bus. It is based on the RTKLIB commandline program rtkrcv, and keeps much of the same functionality, with a few notable exceptions. The task is configured through a configuration file, also called a conf file, and can configure a connected serial device based on receiver configuration file, also called a CMD file. Measurements can be read from different sources, such as log files or serial devices, and, if specified in the conf file, they can be logged in different file formats as well. Unlike the rtkrcv program however, the task does not estimate any state variables, it does not run separately in a terminal and can not output any kind of status screens. \\
+    \todo{spør om setting av flagg}
     
     The RTKLIB code base can be accessed in DUNE by adding it as a third party vendor library. However, RTKLIB builds its programs with makefiles only, while DUNE relies on CMake. Therefore, a CMake file is added to the vendor, based on the makefile for rtkrcv. To enable multi-GNSS functionality a flag must be set for each enabled constellation. However, this changes the value of several internal preprocessor macros, which in turn is used to set the size of RTKLIB's internal storage structs. To avoid memory errors it is therefore necessary that all DUNE tasks working with RTKLIB structs add the same flags to their own CMake files.\\
     
@@ -46,7 +47,45 @@ For the system running on hardware, two DUNE tasks have been implemented. One ta
     \label{tab:imc-gnss}
     \end{table}
     
-    After configuration files have been read and storage structs have been allocated, the task enters its main execution loop. This reads data from the input stream, which will eventually store an ephemeris. For each available ephemeris, satellite position and velocity is calculated. Measurements are then collected, corrected for atmospheric, sagnac and satellite clock errors and finally dispatched, with satellite position and velocity, as a RawGNSSdata IMC message, shown in table \ref{tab:imc-gnss}. The corrections are a function of the receiver position, which the RTKLIB task receives by binding the EstimatedState IMC message, which in this implementation is dispatched from the EKF. If set in the configuration file, the task stores both measurements and receiver position in a UBX and a POS file, respectively, each iteration. Note that the name \textit{RawGNSSdata} is somewhat misleading, as corrections have been applied to the measurements. This IMC message type is simply used because it was implemented prior to this thesis and readily available.
+    \begin{algorithm}
+    \caption{RTKLIB interface, pseudocode}\label{alg:rtklib-interface}
+    \begin{flushleft}
+    \textbf{Input}:  EstimatedState\\
+    \textbf{Output}: RawGNSSdata
+    \end{flushleft}
+    \vspace{-0.3cm}
+    \hrulefill
+    \vspace{0.3cm}
+    \begin{algorithmic}
+    \State Read conf file\\
+    \WHILE {DUNE not stopped}
+    \State $\textit{data} \gets \text{Read data from receiver}$\\
+    \IF {$\textit{data} \text{ is ephemeris}$}
+        \STATE store \textit{data} if not already stored
+    \ELSIF {\textit{data} is measurement \textbf{and} ephemeris stored for satellite}
+        \STATE calculate satellite position and velocity
+        \STATE calculate measurement corrections
+        \STATE dispatch corrected measurements, satellite position and velocity
+        \STATE store corrected measurements in file
+    \ENDIF
+    \end{algorithmic}
+    \end{algorithm}
+    %\begin{algorithm}[!htbp]
+    %\caption{RTK-interface pseudo code}
+	%\label{alg:rtk-interface}
+    %    \begin{minipage}{\dimexpr\textwidth-2\algomargin\relax}
+    %        \begin{enumerate}
+    %satellite ephemeris or a measurement.
+    %            \begin{enumerate}
+    %                \item If its an ephemeris, store it
+    %                \item If it is a measurement, dispatch it as a RawGNSSdata %message
+    %            \end{enumerate}
+    %        \item 
+    %        \end{enumerate}
+    %        \vspace{0.1cm}
+    %    \end{minipage}
+    %\end{algorithm}
+    Algorithm \ref{alg:rtklib-interface} describes the rtklib-interface. After configuration files have been read and storage structs have been allocated, the task enters its main execution loop. This reads data from the input stream, which will eventually store an ephemeris. For each available ephemeris, satellite position and velocity is calculated. Measurements are then collected, corrected for atmospheric, sagnac and satellite clock errors and finally dispatched, with satellite position and velocity, as a RawGNSSdata IMC message, shown in table \ref{tab:imc-gnss}. The corrections are a function of the receiver position, which the RTKLIB task receives by binding the EstimatedState IMC message, which in this implementation is dispatched from the EKF. If set in the configuration file, the task stores both measurements and receiver position in a UBX and a POS file, respectively, each iteration. Note that the name \textit{RawGNSSdata} is somewhat misleading, as corrections have been applied to the measurements. This IMC message type is simply used because it was implemented prior to this thesis and readily available.
     
 \subsection{Extended Kalman filter}
     \label{sec:imp:ekf-dune}

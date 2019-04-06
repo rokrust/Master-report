@@ -4,7 +4,7 @@
 %https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20020060647.pdf
 
 
-
+\todo{Add intro}
 \subsection{Architectures}
     When integrating GNSS and INS data, the concept of \textit{coupledness} is important to consider. How coupled an integration architecture is describes its complexity with respect to which measurements are used \cite{groves2013principles, noureldin2012fundamentals}. Although different terms are found in the literature, the most widely used are \textit{loosely coupled}, \textit{tightly coupled} and \textit{deep integration}, as described in \cite{groves2013principles}. The integration filter output does not necessarily represent the actual state. In the indirect, or error state, filter error estimates of the INS solution is output instead. Further, if these error estimates are applied directly to the INS state estimate, the integration filter is said to be \textit{open loop}. The alternative is to supply the corrections as input to the INS, and is known as a \textit{closed loop} system.
     
@@ -33,7 +33,7 @@
     Figure \ref{fig:tightly_coupled} shows a tightly coupled integration architecture. Note that no Kalman filter is connected to the GNSS except for the integration filter, which utilizes the GNSS observables directly.\\
 
     \subsubsection{Deeply coupled}
-    With access to a GNSS receivers firmware integration can be done \textit{ultra-tight}. This further couples the INS and GNSS receiver by using the INS to aid the receiver in signal tracking.
+    With access to a GNSS receivers firmware integration can be done \textit{ultra-tight}. This further couples the INS and GNSS receiver by using the INS to aid the receiver in signal tracking. See \cite{kim2003ultra} for a detailed explanation with an example implementation.
     
     
 \subsection{Extended Kalman Filter}

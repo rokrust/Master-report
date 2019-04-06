@@ -8,13 +8,21 @@ This chapter presents a tightly coupled extended Kalman filter estimating positi
 \label{sec:imp:ekf}
     \subimport{Implementation/}{EKF.tex}
 
+\section{Obtaining low level GNSS signals}
+    Many GNSS receivers can be configured to output raw measurements and ephemerides. However, to access these, a parser must be implemented. There are several alternatives.\\ 
+    
+    \subsection{Stand alone task}
+    The first option to be considered was to implement a parser task from scratch. This was quickly discarded however, as the ephemeris calculations from section \ref{sec:ephemeris} and measurement corrections would have to be implemented as well. Additionally, other options offer some significant benefits.\\
+    
+    \subsection{PyUblox}
+    The next to be considered was PyUblox, a python program created by Andrew Tridgell \cite{pyublox}. It can parse several kinds of GNSS receiver output messages, provide corrections and estimate position. It also supports differential GNSS over UDP. However, the python program can not communicate directly with DUNE and would require some different solution, such as communication over UDP. This would require the pyUblox to depend on a UDP task to dispatch measurements, which breaks code abstraction and makes the system difficult to maintain in the future. Also, as the system is to be run on an embedded computer, the additional overhead of employing an interpreter based language should be considered. It has not been maintained for some years.\\
+    
+    \subsection{RTKLIB}
+    RTKLIB was the chosen system in the end. It is written in C, which makes it a fairly simple matter to interface it with DUNE, written in C++. This means that a tidy code abstraction can be maintained as a dedicated DUNE task can be implemented for the GNSS related operations of the system, and functions from the RTKLIB code base can be called directly. This is one of the biggest benefits of interfacing RTKLIB. The extensive code base of RTKLIB offers a myriad of different GNSS related functionality, RTK positioning among them, which is believed to significantly aid future work in this area. It is also highly configurable and data can be input from a range of different streams, such as serial devices, log files or TCP servers. The program can configure connected serial devices as well. As all configurations are described in files, it is simple to switch from one configuration from another, and these files can easily be shared with other implementations. There is also a large community situated around RTKLIB, so it has been tested extensively and is still maintained, making an interface with RTKLIB a prime candidate for future implementations. The only downfall is that this setup requires a fair understanding of the RTKLIB source code, which is far from readable and short on commenting.
+    
 \section{DUNE implementation}
     \subimport{Implementation/}{Dune.tex}
-
-%\section{Testing and tuning}
-%    \label{sec:imp:simulator}
-%    \subimport{Implementation/}{Simulators.tex}
-
+    
 \section{Embedded Platform}
     \subimport{Implementation/}{Hardware.tex}
 

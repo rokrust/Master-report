@@ -24,26 +24,29 @@ The chosen integration filter of this thesis is a simple direct state extended K
     
 \subsection{Model description}
     %Describe state 
-    The implemented model estimates position, velocity in the ECEF frame of reference and receiver clock bias and receiver clock bias rate. This leads to the state space vector
+    The implemented model estimates position and velocity in the ECEF frame of reference, accelerometer bias and receiver clock bias and receiver clock bias rate. Note that all GNSS constellations keep a different time system, and it is therefore necessary to add additional bias estimates when working with a multi-GNSS setup. This thesis works with measurements from both GPS and GLONASS, and hence the offset bias between the two is estimated as well. In that order, this leads to the state space vector
     \begin{equation}
         \bm{x} = 
         \begin{bmatrix}
             \pos\\[6pt]
             \vel\\[6pt]
+            \ba\\[6pt]
             \bias\\[6pt]
-            \biasdot
+            \biasdot\\[6pt]
+            \biasglo
         \end{bmatrix}
     \end{equation}
     
-    %The gravity vector in the NED frame is assumed constant as 
-    %\begin{equation}
-    %    \label{def:gn}
-    %    \mathbf{g}_n =
-    %    \begin{bmatrix}
-    %        0 & 0 & 9.80665
-    %    \end{bmatrix}^T
-    %    [\frac{m}{s^2}]
-    %\end{equation}
+    Note that the attitude is left unmodeled in the filter, although the prediction model depends on the rotation matrix from the body frame to the ECEF frame. Therefore, the attitude is modeled separately by a different system and assumed to be a perfect representation. It also depends on the gravitational vector decomposed in the ECEF frame. This is found by rotating the \textit{plumb bob} gravity vector, defined in the NED frame as
+
+    \begin{equation}
+        \label{def:gn}
+        \mathbf{g}_n =
+        \begin{bmatrix}
+            0 & 0 & 9.80665
+        \end{bmatrix}^T
+        [\frac{m}{s^2}]
+    \end{equation}
     
 \todo{Position and velocity in ECEF}
 
@@ -69,12 +72,13 @@ The chosen integration filter of this thesis is a simple direct state extended K
     To derive the linearized measurement matrix for the pseudo-range measurements, $\bm{H}_\pr$, the model is first differentiated with respect to the receiver position
     \begin{align}
         \begin{split}
-            \partialdiff{\pr}{\pos}   & = \partialdiff{}{\pos}\norm{\bm{p}^e_s - \pos}_2\\   & = -\Bigg(\frac{\bm{p}^e_s - \pos}{\norm{\bm{p}^e_s - \pos}_2}\Bigg)^T = \bm{l}^e^T
+            \partialdiff{\pr}{\pos}   & = \partialdiff{}{\pos}\norm{\bm{p}^e_s - \pos}_2\\   & = -\Bigg(\frac{\bm{p}^e_s - \pos}{\norm{\bm{p}^e_s - \pos}_2}\Bigg)^T = \bm{l}^{e^T}
         \end{split}
         \\[2ex]
-        \intertext{Where $\bm{l}^e^T$ is the line of sight vector between receiver and satellite. Differentiating with respect to the receiver clock bias is trivial}
+        \intertext{Where $\bm{l}^e^T$ is the line of sight vector between receiver and satellite. Differentiating with respect to the receiver clock bias and GLONASS offset is trivial}
         \begin{split}
-            \partialdiff{\pr}{\hat{\beta}}   & = 1
+            \partialdiff{\pr}{\bias}   & = 1\\
+            \partialdiff{\pr}{\biasglo}   & = 1
         \end{split}
     \end{align}
     
@@ -82,19 +86,21 @@ The chosen integration filter of this thesis is a simple direct state extended K
     \begin{equation}
         \bm{H}_\pr =
         \begin{bmatrix}
-            -\bm{l}_1^e^T & \zeros{1}{3} & 1 & 0\\
-            -\bm{l}_2^e^T & \zeros{1}{3} & 1 & 0\\
+            -\bm{l}_1^{e^T} & \zeros{1}{3} & \zeros{1}{3} & 1 & 0 & 0\\
+            -\bm{l}_2^{e^T} & \zeros{1}{3} & \zeros{1}{3} & 1 & 0 & 0\\
             &\vdots\\
-            -\bm{l}_m^e^T & \zeros{1}{3} & 1 & 0\\
+            -\bm{l}_m^{e^T} & \zeros{1}{3} & \zeros{1}{3} & 1 & 0 & 0\\
         \end{bmatrix}
     \end{equation}
+    
+    Where measurements from the GLONASS satellites will add a one to the last column to include the offset estimate.
     
     \subsubsection*{Pseudo-range rate}
     Similarly, the pseudo-range rate model is linearized too. From equation \ref{eq:range-rate} it is seen that it depends on both position, velocity and receiver clock bias rate. However, because of the Doppler shift's weak dependence on position, only the velocity and receiver clock bias rate terms are used.
     
     \begin{align}
         \begin{split}
-            \partialdiff{\dot{\pr}}{\vel}   & = \partialdiff{}{\vel}(\bm{v}^e_s - \vel)\bm{l}^e^T = -\bm{l}^e^T
+            \partialdiff{\dot{\pr}}{\vel}   & = \partialdiff{}{\vel}(\bm{v}^e_s - \vel)\bm{l}^{e^T} = -\bm{l}^{e^T}
         \end{split}
         \\[2ex]
         \begin{split}
@@ -102,14 +108,14 @@ The chosen integration filter of this thesis is a simple direct state extended K
         \end{split}
     \end{align}
     
-    The measurement matrix is thus
+    The measurement matrix for GPS satellites are thus
     \begin{equation}
         \bm{H}_\pr =
         \begin{bmatrix}
-            \zeros{1}{3} & -\bm{l}_1^e^T & 0 & 1\\
-            \zeros{1}{3} & -\bm{l}_2^e^T & 0 & 1\\
+            \zeros{1}{3} & -\bm{l}_1^{e^T} & \zeros{1}{3} & 0 & 1 & 0\\
+            \zeros{1}{3} & -\bm{l}_2^{e^T} & \zeros{1}{3} & 0 & 1 & 0\\
             &\vdots\\
-            \zeros{1}{3} & -\bm{l}_m^e^T & 0 & 1\\
+            \zeros{1}{3} & -\bm{l}_m^{e^T} & \zeros{1}{3} & 0 & 1 & 0\\
         \end{bmatrix}
     \end{equation}
 
@@ -117,23 +123,24 @@ The chosen integration filter of this thesis is a simple direct state extended K
     The acceleration measurement, $\bm{f}^b_{IMU}$, is the input vector of the system and is modeled in the body frame as 
     \begin{equation}
         \begin{split}
-            \bm{f}^b_{IMU} = \bm{f}^b_{ib} + \bm{b}_a + \bm{\omega}_a\\
-            \bm{f}^b_{ib} = \bm{f}^b_{IMU} - \bm{b}_a - \bm{\omega}_a
+            \bm{f}^b_{IMU} = \bm{f}^b_{ib} + \ba + \bm{w}_a\\
+            \bm{f}^b_{ib} = \bm{f}^b_{IMU} - \ba - \bm{w}_a
         \end{split}
         \label{eq:acc-mes-model}
     \end{equation}
-    where $\bm{b}_a$ is the bias of the measurement and $\bm{\omega}_a$ is considered Gaussian white noise. Note that the bias is not estimated in this simple filter, but is included in the equations for completeness.
+    where $\bm{w}_a$ is considered Gaussian white noise.
     
     \begin{align}
         \intertext{The time derivative of position is simply defined as the velocity}
         \posd &= \vel\\
         \label{eq:pred-vel}
-        \intertext{Rotating the acceleration measurement \ref{eq:acc-mes-model} and adding a Choriolis term to account for earth rotation, the time derivative of the velocity can be written}
-        \veld &= \rot{e}{b}(\fimu - \bm{b}_a) + \bm{g}^e -2\bm{S}(\omgie)\vel\\\todo{fix notation}
+        \intertext{Rotating the acceleration measurement \ref{eq:acc-mes-model} and adding a Coriolis term to account for earth rotation, the time derivative of the velocity can be written}
+        \veld &= \rot{e}{b}(\fimu - \ba) + \bm{g}^e -2\bm{S}(\omgie)\vel\\\todo{fix notation}
         \label{eq:pred-pos}
-        \intertext{Where the acceleration measurement noise is discarded as it has expected value 0 and the rotation matrix $\rot{e}{b}$ is estimated outside of the filter. The receiver clock bias and its rate is trivial}
+        \intertext{Where the acceleration measurement noise is discarded as it has expected value 0 and the rotation matrix $\rot{e}{b}$ is estimated outside of the filter. The GPS receiver clock bias and its rate is trivial. The GLONASS offset is assumed constant in the prediction model}%Same drift rate
         \biasd &= \biasdot\\
-        \biasdotd &= 0
+        \biasdotd &= 0\\
+        \biasglod &= 0
     \end{align}
     
     %Linearized state matrix
@@ -141,24 +148,28 @@ The chosen integration filter of this thesis is a simple direct state extended K
     \begin{align}
         \bm{F} &= 
         \begin{bmatrix}
-            \zeros{3}{3} & \eye{3}          & 0 & 0\\
-            \zeros{3}{3} & -2\bm{S}(\omgie) & 0 & 0\\
-            \zeros{1}{3} & \zeros{1}{3}     & 0 & 1\\
-            \zeros{1}{3} & \zeros{1}{3}     & 0 & 0
+            \zeros{3}{3} & \eye{3}          & \zeros{3}{3}  & 0 & 0 & 0\\
+            \zeros{3}{3} & -2\bm{S}(\omgie) & \rot{e}{b}    & 0 & 0 & 0\\
+            \zeros{3}{3} & \zeros{1}{3}     & \zeros{3}{3}  & 0 & 0 & 0\\
+            \zeros{1}{3} & \zeros{1}{3}     & \zeros{1}{3}  & 0 & 1 & 0\\
+            \zeros{1}{3} & \zeros{1}{3}     & \zeros{1}{3}  & 0 & 0 & 0\\
         \end{bmatrix}\\
         \bm{B} &= 
         \begin{bmatrix}
             \zeros{3}{3}\\
             \rot{e}{b}\\
+            \zeros{3}{3}\\
+            \zeros{1}{3}\\
             \zeros{1}{3}\\
             \zeros{1}{3}
         \end{bmatrix}
     \end{align}
+    Where the rotation matrix, $\rot{e}{b}$, is calculated from the attitude received from a separate system.
     
 \subsubsection{Discretization}
     Because the filter is implemented on a computer, the dynamics should be discretized. Defining the acceleration vector
     \begin{align}
-        \bm{a} &:= \rot{e}{b}(\fimu - \bm{b}_a) + \bm{g}^e - 2\bm{S}(\omgie)\eb{\hat{v}}\\
+        \bm{a} &:= \rot{e}{b}(\fimu - \ba) + \bm{g}^e - 2\bm{S}(\omgie)\eb{\hat{v}}\\
         \intertext{the prediction model becomes}
         \eb{\hat{p}} &\leftarrow \eb{\hat{p}} + \eb{\hat{v}}\Delta t + \bm{a}\frac{\Delta t^2}{2}\\
         \eb{\hat{v}} &\leftarrow \eb{\hat{v}} + \bm{a}\Delta t
@@ -187,15 +198,9 @@ The chosen integration filter of this thesis is a simple direct state extended K
             \vspace{0.1cm}
         \end{minipage}
     \end{algorithm}
-\todo{groves p. 283. pseudo-range rates weak dependence on position. Commonly neglected in H}
 
 % R = a*(1/sin(el) + c)
 % Faster convergence e^-ax + e^-bx + c
-
-
-
-
-
 %Structure
     % 1 - EKF method description
     %     + Because the expected error state is always zero except between a measurement correction          and the injection of the error in to the nominal state, followed by a reset, there is no         point in actually implementing the propagation of the error state. The covariance of the         error is however propagated (Ingen x priori)

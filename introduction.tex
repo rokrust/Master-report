@@ -1,0 +1,43 @@
+%All of these approaches work offline and as such there is a need for a working online implementation.
+%
+Over the last decade the price of common Inertial measurement units (IMU) and global navigation satellite system (GNSS) receivers has decreased exponentially, while seeing an increase in precision and accuracy. Correspondingly, a range of different devices have come to rely on these sensors for position, velocity and attitude (PVA) estimation, but perhaps most interesting is the use of these in unmanned vehicles. Accurate PVA estimation systems are necessary for autonomous vehicles as any operator will have limited control during a live run. However, this can not be reliably provided by the IMU or GNSS measurements alone.\\
+
+An inertial navigation system (INS) provides PVA estimates based on the specific force and angular velocity measurements of an IMU. Estimates are updated at relatively high frequencies and the IMU measurements tend to contain little noise. The INS is therefore considered to accurately capture the high dynamics of the unmanned vehicle in its estimates. However, as these estimates are based on integrated measurements they are bound to drift over time. GNSS provides position and velocity estimates at a lower frequency based on measurements that tend to be far noisier than those of the IMU, but with great long-term accuracy. Thus, the INS and GNSS based estimates are complimentary in nature and can be combined to have the best of both worlds, with the GNSS measurements eliminating the drift of the INS and the INS providing smooth PVA estimates. There is also the added benefit that the INS can provide \textit{dead reckoning} estimates during GNSS signal outtages.\\
+
+ %With the RTK positioning mode this can be precise to the order of centimeters for position \cite{groves2013principles} and the order of millimeters for velocity \cite{freda2015time}. 
+
+
+\section{Existing implementations}
+The great performance of INS and GNSS integration has made it a popular choice for PVA estimation, and a considerable amount of examples are found in the literature. In \cite{hansen2018nonlinear} inertial measurements are integrated with GNSS measurements based on a real-time kinematic (RTK) approach, and tested on data logged in the field.  \cite{gryte2017robust} adds ultra wideband range measurements with a similar setup for increased robustness during GNSS dropouts and tests the implementation with a simulator. A loosely coupled observer is implemented in \cite{grip2015globally}, with attitude estimates based on a rotation matrix with nine degrees of freedom. \\
+
+For estimating position and velocity (PV) of an unmanned vehicle in real-time, many systems already exist. The open source software RTKLIB is a popular choice for this task as it is highly configurable and requires minimal setup. Its code base is quite extensive and offers functionality related to most GNSS related operations, such as measurement correction models, DGPS and RTK positioning and can read data from a range of different streams. RTKLIB offers no support for integrating data from other sensors, although these may be integrated with the the RTKLIB PV estimates externally. Another popular choice is to rely on an external flight controller for state estimates, such as those of the PixHawk family. This combines both IMU, magnetometer and GNSS measurements to estimate and output both position, velocity and attitude, and is designed to require minimal setup. However, both of these approaches are examples of a loosely coupled approach to INS/GNSS integration, whereas a tightly coupled integration of raw measurements tends to perform better \cite{farrell2008aided, groves2013principles}.\\
+%\cite{freda2015time} rtk velocity. Matlab implementation
+%Example of dune tightly coupled with rtklib running separately?
+
+\section{Thesis contributions}
+ From a study of existing integration filter implementations, a lack of online estimators is seen. Moreover, although a real-time integration filter requires significant setup there is little mention of code reuse. This thesis therefore focuses on creating an online, tightly coupled INS/GNSS integration filter using the real-time environment DUNE: Unified Navigation Environment (DUNE). An interface between DUNE and RTKLIB is also added to access raw GNSS measurements and the full RTKLIB code base, as this is believed to aid future implementations GNSS dependent systems. The thesis thus contributes with the following\\
+
+%This thesis therefore implements a modular integration filter in the DUNE: Unified Navigation Environment. The thread based nature of this environment tends to result in intuitively abstracted modules, and it is therefore believed that any future research may easily integrate this implementation in their work.
+
+\begin{itemize}
+    \item A simple direct state extended Kalman filter for integrating acceleration measurements with pseudo-range and Doppler shift measurements in a tightly coupled approach, implemented in the real time navigation environment DUNE.
+    \item An interface between the codebase of the open source library RTKLIB and DUNE.
+    \item A hardware platform running the DUNE implementation in real-time.
+    \item Comparison of position and velocity estimates to those of an onboard pixhawk flight controller, as well as a post processed RTK solution from RTKLIB.
+    
+\end{itemize}
+
+%no unified framework. I made a modular dune implementation
+%live testing krever mye oppsett. Trenger en felles oppsettsplatform
+%Hvorfor DUNE er bra
+    %Real time framework
+    %Intuitive abstraction
+    %Module based code easy to reuse
+
+%Hvordan det jeg har gjort skiller seg ut
+    % Online
+    % Implementert i DUNE
+    % Baner vei for RTK-løsninger og annen GNSS
+    
+
+%\section{Thesis outline}
