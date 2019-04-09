@@ -51,18 +51,10 @@ The measurement is called \textit{pseudo}-range as it incorporates numerous erro
 \begin{align}
     P &= \rho + \beta - c\Delta t_{sv} + I_r + T_r + \delta p_{sagnac} + \vartheta\\
     \label{eq:pr-model}
-    \intertext{Where $\rho$ is the geometric range, $\beta$ is the receiver clock error scaled by the speed of light, $\Delta t_{sv}_i$ the satellite clock error, $I_{r_i}$ the ionospheric delay, $T_{r}$ the tropospheric delay and $\vartheta$ are the unmodeled errors. The geometric range is given by}
+    \intertext{Where $\rho$ is the geometric range, $\beta$ is the receiver clock error scaled by the speed of light, $\Delta t_{sv}_{i}$ the satellite clock error, $I_{r_i}$ the ionospheric delay, $T_{r}$ the tropospheric delay and $\vartheta$ are the unmodeled errors. The geometric range is given by}
     \rho &= \norm{\bm{p}_r - \bm{p}_s}_2 = \sqrt{(x_r - x_s)^2 + (y_r - y_s)^2 + (z_r - z_s)^2}
     \intertext{With $\bm{p}_r$ being the receiver position at the time of reception and $\bm{p}_s$ the satellite position at the time of transmission.}
 \end{align}
-
-\missingfigure[]{pseudo-range}
-\begin{figure}
-    \centering
-    \includegraphics{}
-    \caption{Pseudo-range with errors}
-    \label{fig:pr-delay}
-\end{figure}
 
 \todo{Directly observable brukt riktig?}
 \todo{Mention position estimation 4 sat?}

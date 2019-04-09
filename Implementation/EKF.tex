@@ -144,15 +144,18 @@ The chosen integration filter of this thesis is a simple direct state extended K
     \end{align}
     
     %Linearized state matrix
-    As the filter does not estimate the attitude, this prediction model is linear with transition and input matrix
+    As the filter does not estimate the attitude, this prediction model can be written on state space form
     \begin{align}
+        \dot{\bm{x}} &= \bm{F}\bm{x} + \bm{B}\bm{u}^b_{ib}
+        \label{eq:state-space}
+        \intertext{Where $\bm{x}$ is the state vector and $\bm{u}$ is the acceleration measurement vector. The transition and input matrix is}
         \bm{F} &= 
         \begin{bmatrix}
-            \zeros{3}{3} & \eye{3}          & \zeros{3}{3}  & 0 & 0 & 0\\
-            \zeros{3}{3} & -2\bm{S}(\omgie) & \rot{e}{b}    & 0 & 0 & 0\\
-            \zeros{3}{3} & \zeros{1}{3}     & \zeros{3}{3}  & 0 & 0 & 0\\
-            \zeros{1}{3} & \zeros{1}{3}     & \zeros{1}{3}  & 0 & 1 & 0\\
-            \zeros{1}{3} & \zeros{1}{3}     & \zeros{1}{3}  & 0 & 0 & 0\\
+            \zeros{3}{3} & \eye{3}          & \zeros{3}{3}\\
+            \zeros{3}{3} & -2\bm{S}(\omgie) & \rot{e}{b}  \\
+            \zeros{3}{3} & \zeros{1}{3}     & \zeros{3}{3}\\
+            \zeros{1}{3} & \zeros{1}{3}     & \zeros{1}{3}\\
+            \zeros{1}{3} & \zeros{1}{3}     & \zeros{1}{3}\\
         \end{bmatrix}\\
         \bm{B} &= 
         \begin{bmatrix}

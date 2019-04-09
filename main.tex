@@ -1,14 +1,17 @@
 \documentclass[pdftex,10pt,b5paper,twoside]{book}
 \usepackage[utf8]{inputenc}
+\usepackage{comment}
+
 \usepackage[toc,page]{appendix}
 \usepackage[T1]{fontenc}
 \usepackage[lmargin=25mm,rmargin=25mm,tmargin=27mm,bmargin=30mm]{geometry}
-\usepackage[]{todonotes}
+\usepackage[disable]{todonotes}
 \usepackage{import}
 \usepackage{graphicx}
 \usepackage{amsmath}
 \usepackage[sc]{mathpazo}
 \usepackage{bm}
+
 \usepackage{nomencl}
 \usepackage{gensymb}
 \usepackage{rotating}
@@ -26,27 +29,28 @@
 \usepackage{mathrsfs}
 \usepackage[noend]{algpseudocode}
 \usetikzlibrary{arrows}
+
 \pgfplotsset{compat=1.15}
 \usepackage{mathrsfs}
 \usepackage{tabularx}
 \usepackage[ruled,vlined]{algorithm2e}
 \usepackage{algcompatible}
-\usetikzlibrary{arrows}
-%\definecolor{xdxdff}{rgb}{0.49019607843137253,0.49019607843137253,1}
-%\definecolor{ffqqqq}{rgb}{1,0,0}
-%\definecolor{ududff}{rgb}{0.30196078431372547,0.30196078431372547,1}
-%\definecolor{uuuuuu}{rgb}{0.26666666666666666,0.26666666666666666,0.26666666666666666}
+\usepackage{fancyhdr}
+%\pagestyle{fancy}
+\definecolor{xdxdff}{rgb}{0.49019607843137253,0.49019607843137253,1}
+\definecolor{ffqqqq}{rgb}{1,0,0}
+\definecolor{ududff}{rgb}{0.30196078431372547,0.30196078431372547,1}
+\definecolor{uuuuuu}{rgb}{0.26666666666666666,0.26666666666666666,0.26666666666666666}
 
 \input{util/structure.tex}
 \input{util/commands.tex}
 
-\title{Master drafts}
-\author{Øyvind Aukrust Rones}
-\date{November 2018}
-
+%\title{Master drafts}
+%\author{Øyvind Aukrust Rones}
+%\date{November 2018}
 \begin{document}
 \todo{Change document structure (paragraph should add a new line)}
-\maketitle
+%\maketitle
 
 \listoftodos
 \input{Preliminaries/main}
@@ -65,15 +69,27 @@
     \input{Implementation/main}
 \newpage
 \chapter{Results}
+    \label{ch:results}
     \input{Results/main}
 \newpage
-    \input{Appendices/main}
+\chapter{Discussion}
+    \label{ch:discussion}
+    \input{Discussion/main.tex}
+\newpage
+\chapter{Conclusion}
+    \label{ch:conclusion}
+    %RTKLIB task
+    %DUNE task
+    %runs in real time
+    
+    %Shown to blah blah blah
+    A tightly coupled extended Kalman filter has been implemented in the real time navigation environment DUNE.
+\input{Appendices/main}
     
 \bibliographystyle{abbrv}
 \bibliography{bibliography.bib}
     
 \end{document}
-
 
 %x Introduction
 %x  - Frontpage

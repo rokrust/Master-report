@@ -1,0 +1,94 @@
+%Although the system receives attitude estimates from the pixhawk, these systems are considered largely independent. A New Carrier Phase Ambiguity Estimation for GNSS Attitude Determination Systems attitude observable from velocity
+
+This chapter discusses the system described in chapter \ref{ch:implementation} in light of the results presented in chapter \ref{ch:results}.
+\section{Convergence}
+    % Done ?
+    The stationary tests revealed the EKF to be fairly slow to converge, requiring approximately 150 seconds before position estimates converged to within ten meters in the north direction and five meters in the east direction. By varying the initial state, it was found that the EKF was particularly dependent on proper initial estimates of both position and receiver clock bias, otherwise deviating significantly after just a few iterations. Although high initial values were added for the variances of these state variables, it proved to have little effect. This may indicate that the measurement covariance for the pseudo-range measurements were too low, resulting in the high value of the initial pseudo-range residuals affecting the state estimates overly much. It should however be noted that the tests performed for this thesis was done by foot, where dynamics are considered fairly low. \\ 
+        
+    In this thesis, the measurement was simply set as a function of the responsible satellite's elevation angle. It would however be interesting to set this as a function of time. A high value could be set initially to account for the initial estimation errors, and slowly decrease in value as the filter converged.\\
+        
+    %This may also explain the slightly erratic state estimates.
+        
+    %Slow dynamics. Filter convergence slow
+    %Initial values matters little. Sensitive to errors in receiver clock bias. Dynamic modeling of covariance could improve this
+        
+\section{Tight coupling}
+    %Significant increase in noise of receiver clock bias rate due to no imu-smoothing
+    %Works as a low pass filter
+    %Probably due to multipath. IMU can reduce the severity, making the system more robust. Multipath seems to make the 
+    %Compensates for unseen errors in GNSS
+    %Worse RMSE and error is not a normal distribution. Thus one of the assumptions of the kalman filter is broken, leading to an improper propagation of the estimated error covariance. 
+    
+    Comparing the state estimates from the tightly coupled EKF and the estimates based only on GNSS measurements, it is seen that the acceleration measurements contributes to provide smoother estimates, working as a low pass filter. This is especially clear when comparing the different receiver clock bias estimates, where only the decoupled estimate contains significant periodic spikes. \\
+    
+    Interestingly, this was also seen to aid the estimation errors in maintaining a normal distribution, and keep the expected value of the errors centered at zero. For the second approach however, the distributions were skewed and biased, violating one of the main assumptions of the Kalman filter estimator, as they can not be described by mean and covariance alone. This is probably the result of stochastic multipath errors. According to the bias present in the error distributions, the reflecting surface would be situated roughly south-west of the testing route, which can be explained from the image in figure \ref{fig:sat-path}, where several buildings are shown to lay south west of route in the lower left corner. In this test, the redundancy offered by integrating acceleration measurements served to reduce the severity of the multipath significantly, yielding a far more robust system. \\
+    
+    While the system was kept stationary, the tightly coupled EKF was found to have significantly higher RMSE values in the north and east direction than the decoupled system, while also being slower to converge. This is because the stationary case does not provide any information with regards to acceleration, and from equation \ref{eq:state-space}, discarding the acceleration integration can be interpreted as the acceleration measurement being zero. Thus, in the stationary case, the tightly coupled filter will only integrate the IMU errors, while the second system can be considered to employ perfect acceleration measurements for this scenario. As the acceleration measurements in these tests contained significant bias components, the acceleration measurement errors will be significant until the bias estimate has converged. In figures \ref{fig:bias-rate-stat} and \ref{fig:bias-rate} the acceleration measurement noise is seen to have propagated the estimate of the receiver clock bias rate, introducing high frequency noise, yet smoothing the more extreme, periodic transients seen in the decoupled estimate.\\
+    
+    Given the close connection between receiver clock bias rate, range-rate and acceleration measurements and velocity, it would have been interesting to investigate the improvement in velocity estimates with respect to a reference, but as mentioned earlier, this was ultimately found to be unavailable.
+    
+    %No significant improvements over standard low pass
+        %Unexpected. Maybe because of low IMU frequency
+        
+\section{Multi GNSS}
+    %Doppler: Seen to be susceptible to noise through the rate of the receiver clock bias. 
+    %Locked on to satellites faster
+        
+    By adding GLONASS measurements to the EKF, the amount of tracked satellites more than doubled. The effect of this can be seen in table \ref{tab:rmse-gnss}. In the north direction, this corresponds to an improvement of over one meter, with less significant improvements in the east and down directions. Experiments showed that the tracking of GLONASS satellites was more stable. This is possibly due to GLONASS satellites maintaining orbits with a higher inclination angle, offering better coverage at higher latitudes than GPS. GLONASS measurements were also found to be available several seconds earlier than GPS, as there is no need to wait for an ephemeris, rather broadcasting satellite position, velocity and acceleration directly. 
+    %GNSS frequency did not play a big part
+    %Doubles the amount of satellites
+    %Significantly (?) better results
+    %Direction of averaged velocity worse or not?
+        
+\section{CPU usage}
+    Running the system on the embedded platform was found to require a significant 
+    %RTKLIB receives ecef position externally and transforms it to LLH. This is computationally expensive, and for limited range operations this position can be set as constant instead.
+
+    %Necessary to increase maximum allowed CPU usage
+    %Under 
+    %Not as much from GLONASS because no ephemeris
+    
+\section{Result uncertainties}
+    Testing revealed some unexpected results, among them the reference systems were found to be slightly lacking.
+
+    %RTK
+    %Crashed
+    \subsection{Reference solutions}
+        There are some uncertainties in the accuracy of the post-processed reference RTK solution. Neither of the two references managed to acquire a proper fix of the integer ambiguities, and the reference for the second test, based on GLONASS and GPS measurements, is even seen to contain sudden jumps in position, as opposed to the smooth path of the one based on GPS only. It is unexpected that the former would provide a less precise estimate as tracking of between six and seven additional satellites should have resulted in a better estimate. However, both of these tests were performed on separate days, so it is possible that conditions were more preferable, with regards to outside factors such as weather or multipath. Another factor could be that the ArduPilot DUNE-task crashed during this test, partially shutting down DUNE and stopping the IMC-log after just a few seconds. The RTKLIB-task did not shut down however, and a log of the raw measurements could still be acquired after testing. This can have affected the measurement log, such as making the RTKLIB-task hang, possibly skipping measurements and forcing the carrier phase tracking to be reset.\\
+    
+    %Pixhawk
+    \subsection{PixHawk and ArduPilot}
+        The prediction model of the EKF relied on attitude to integrate IMU measurements. Both attitude estimates and IMU measurements were supplied to the EKF, through the ArduPilot DUNE-task, from an onboard PixHawk, both of which were found to be fairly unreliable. The acceleration measurements contained a significant bias component, which remained even after calibration, and its position estimates were unusable with an RMSE in the order of $10^6$ when testing the system in motion. However, it should be noted that applying acceleration measurements was shown to improve state estimates, but further testing is required to ascertain the precision of the attitude estimates as no reference was available for comparison in this regard. It was initially planned to use the PixHawk as a reference for velocity as RTKLIB only outputs position. However, due to the unexpected behaviour of the PixHawk it was decided that these estimates could not be relied upon. Therefore, the estimated velocity of the system could not be properly tested.
+        %Unexpectedly large bias component regardless of tracking
+        %Poor estimates
+        %Prone to crashing
+    
+
+\section{Future work}
+    %carrier smoothing
+    %attitude
+    %proper imu modeling
+    %rtk solution
+    %mekf
+    \begin{itemize}
+        \item \textbf{Position and velocity estimates based on RTK}: The main reason an interface between RTKLIB and DUNE was implemented, was so future DUNE systems would easily have access to its large codebase GNSS related functions, most interestingly, its support for RTK based positioning. The implemented RTKLIB-task has already been configured to dispatch carrier phase with this improvement in mind. It would also be interesting to examine the improvement in state estimates from employing carrier-smoothed pseudo-ranges in the filter. 
+        \item \textbf{Improved integration filter}: The implemented extended Kalman filter is fairly simple, and can be improved to acquire better state estimates. It is believed that an indirect multiplicative extended Kalman filter with attitude estimation should provide a better performance. Another possibility would be to implement a non-linear observer. This has been shown to have a lighter computational footprint than a Kalman filter\todo{cite tor arne}, which can be beneficial as CPU usage was found to be fairly high when running the implemented system. 
+        \item \textbf{Full testing of a multi-GNSS based system}: Due to time constraints, and what is believed to be a faulty pixhawk, the full system was not tested with a multi-GNSS setup. It would be interesting to see how the tightly coupled would improve when aided by additional satellites.
+    \end{itemize}
+    %Little uncertainty in RTK
+    %Ardupilot was not well behaved. Prone to crashing the system and providing bad estimates. The IMU pixhawk dispatched fairly biased estimates even after calibration
+    %Tightly coupled with glonass included
+
+
+
+%Du kan kanskje skrive noe som at usikkerheten i målingene dine blir usikkerheten din relativt til RTK (U_p) + usikkerheten til RTK relativt til faktisk posisjon (U_r). Dette er insignifikant hvis U_p >> U_r, men hvis de er omtrent like store vil du i verste fall ha dobbelt så mye usikkerhet som RTK
+
+
+%\todo{Match i bias_dot- og hastighetstransienter}
+%\todo{Mindre usikkerhet i bias_dot gir høyere usikkerhet i hastighet fordi de er sammenkoblet. Støyen må fanges i en av dem}
+
+%RTKLIB receives ecef position externally and transforms it to LLH. This is computationally expensive, and for limited range operations this position can be set as constant instead.
+
+%Structure
+    % 1 - Introduction
+    %     + Testing goals

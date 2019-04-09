@@ -1,21 +1,186 @@
-This section presents the results of running the system described in section \ref{ch:implementation}, with the goal of investigating performance of the EKF with real, raw data.\\ 
+This chapter presents the results obtained from the system described in section \ref{ch:implementation}, with the goal of investigating performance of the EKF with real, raw data. Although the DUNE implementation was running during testing, an IMC-log was stored so the test could be rerun on a computer, to simplify the process of fine tuning as well as plotting.\\ 
 
 
 % Drawn path used as reference for lat lon
 % px used as imperfect reference with regards to height because of extra sensors
 % 
-The tests were carried out taking the payload by foot along a path drawn up before testing. The path was laid along a number of small roads to make it easy to follow and thus minimize the difference between it and the actual path taken. This is therefore used as a reference for position in the horizontal plane as latitude and longitude coordinates. Additionally, position, as well as velocity, is compared with the separate PixHawk estimates. The RTKLIB position estimates are included as well.\\
+
+    \begin{figure}[!htbp]
+        \centering
+        \includegraphics[scale=0.2]{Results/Images/sat-path.png}
+        \caption{Satellite image of the test area}
+        \label{fig:sat-path}
+    \end{figure}
+    
+%Test location
+All of the results presented were gathered from tests performed in the area near the Norwegian university of science and technology. All tests were carried out on foot, with the hardware in hand. Figure \ref{fig:sat-path} shows a satellite image of the area where the test was undertaken, the planned path in red, and the blue arrows indicating the direction walked.\\
+
+A post-processed RTK solution has been used as a reference for position and velocity, where a base station log was acquired online. The base station, positioned approximately 6.5 km away from the testing area, is assumed to be close enough to obtain a reliable solution. RTKLIB does not output velocity and it was orignally planned to use the onboard PixHawk as a reference for velocity estimates, but testing revealed both the position and velocity estimates of the PixHawk to be unusable, and hence no reference for the velocity is provided.\\
+%The system was firstly kept stationary, allowing the Kalman filter to converge, and secondly, taken by foot along a path drawn up before testing. The path was laid along a number of small roads to make it easy to follow and thus minimize the difference between it and the actual path taken. 
+
 
 \section{Stationary tests}
-
-\section{Dynamic tests}
-    \subsection{GNSS only}
-    \begin{figure}
-        \centering
-        \includegraphics[scale=0.3]{Results/Images/gnss-only.eps}
-        \caption{Position estimate based on GNSS measurements only}
-        \label{fig:test-gnss}
+    %Convergence
+    %Position cloud
+    
+    To allow the EKF estimates to converge, the system was kept stationary for 300 seconds before testing was initiated. Results from this process will now be presented.\\
+    
+    \subsubsection{Position and velocity}
+    The stationary position error of the EKF estimate before full convergence and the RTK solution is shown in figure \ref{fig:pos-err-stat}. Note that the RTK solution did not have a fix at this time, and its accuracy can not be trusted completely. Regardless, it does seem to have a better precision than the EKF estimate. After convergence some noise is present, with a precision of approximately 2 meters in the east direction and 5 meters in the the north direction. The EKF is shown to converge after approximately 150 seconds in figure \ref{fig:converge}.\\
+    
+    \begin{figure}[!htbp]
+        \hspace{-1.5cm}
+        \includegraphics[scale=0.3]{Results/Images/pos-cloud.eps}
+        \caption{Cloud plot of the position error under stationary conditions}
+        \label{fig:pos-err-stat}
     \end{figure}
+    
+    \begin{figure}
+        \hspace{-1.5cm}
+        \includegraphics[scale=0.3]{Results/Images/converge.eps}
+        \caption{Position error during stationary conditions in three dimensions.}
+        \label{fig:converge}
+    \end{figure}
+    
+    The velocity errors of running the EKF with and without acceleration measurements are shown in figure \ref{fig:vel-err-stat}. The solution based solely on GNSS contains some high frequency noise components, and has a root mean square error of $\begin{bmatrix} 0.3701  &  0.1398  &  0.4053\end{bmatrix}$ for north, east and down directions, repectively. Correspondingly, the full system has a root mean square error of $\begin{bmatrix} 1.3830  &  0.1637 &   2.9501\end{bmatrix}$.
+    
+    \begin{figure}
+        \hspace{-1.5cm}
+        \includegraphics[scale=0.3]{Results/Images/vel-err.eps}
+        \caption{Velocity errors of the stationary systems}
+        \label{fig:vel-err-stat}
+    \end{figure}
+    
+    \subsubsection{Biases}
+    It is important to have a good estimate of the receiver clock bias to get any meaningful results from the GNSS. This estimate is shown in figure \ref{fig:bias} and, as expected, is shown to have a constant slope after convergence. The estimated rate of the receiver clock bias is shown in figure \ref{fig:bias-rate-stat} with and without acceleration measurements. While the solution based on GNSS only contains low frequency spikes, the tightly coupled estimate contains some higher frequency noise components.\\
+    
+    \begin{figure}
+        \hspace{-1.5cm}
+        \includegraphics[scale=0.3]{Results/Images/bias.eps}
+        \caption{Receiver clock bias}
+        \label{fig:bias}
+    \end{figure}
+    
+    \begin{figure}
+        \hspace{-1.5cm}
+        \includegraphics[scale=0.3]{Results/Images/bias_rate-stat.eps}
+        \caption{Receiver clock bias rate of the tightly coupled system when stationary.}
+        \label{fig:bias-rate-stat}
+    \end{figure}
+    
+    It was found that the PixHawk IMU measurements contained fairly significant biases, important to estimate to achieve reliable results. This estimate is plotted together with acceleration measurements in figure \ref{fig:bias-acc}. Note that the measurements are corrected for gravity. It is seen from the plot that the EKF makes a fair approximation of the bias.\\
+    
+    \begin{figure}[!htbp]
+        \hspace{-1.5cm}
+        \includegraphics[scale=0.3]{Results/Images/bias-acc.eps}
+        \caption{Estimated accelerometer bias with uncorrected acceleration measurements}
+        \label{fig:bias-acc}
+    \end{figure}
+    
+\section{Dynamic tests}
+    This section covers the part of testing where the system was in motion. To further look into the the benefits of applying acceleration measurements to the EKF, the planned test was performed twice under different conditions. First, the full EKF was run with acceleration and GPS measurements at a frequency of 5 Hz, with results presented in section \label{sec:res:tightly-coupled}. Second, the GNSS receiver was configured to output both GPS and GLONASS measurements at 10 Hz, while the acceleration measurements were discarded, leading to state estimates based on GNSS only. These results are presented in section \label{sec:res:multi-gnss}.\\
+    
+    %The system was tested without any IMU-measurements. The GNSS receiver was configured to output GPS and GLONASS pseudo-range and doppler measurements at a 10 Hz frequency. The estimated latitude and longitude are show in figure \ref{fig:test-gnss}.\\
+    
+
+    %GNSS only compared with reference path
+    %velocity quiver plots in map
+    %The full system used GPS measurements only, at a frequency of 5 Hz. This was done to lighten computational load, as the IMC-logging module was prone to crashing during the test, rendering the logs useless. Figure \ref{fig:full-pos-sub} plots the position estimates of the EKF and the PixHawk, and compares these to the RTK reference. Surprisingly, the PixHawk estimates, while smooth, seem to be significantly worse than those of the EKF. 
+    \subsection{The tightly coupled system}
+    \label{sec:res:tightly-coupled}
+    Figure \ref{fig:test-gnss-vel} shows the latitude and longitude estimates with velocity vectors averaged over approximately a second each. The vectors in the lower left corner have a smaller magnitude as this part of the path goes uphill. Assuming course and heading to be equal, the velocity vectors would ideally go tangential to the reference, but as can be seen, this is not always the case.\\
+     
+    %\begin{figure}[!htbp]
+    %    \hspace{-1.5cm}
+    %    \includegraphics[scale=0.3]{Results/Images/position-sub.eps}}
+    %    \caption{Seperate position estimates in NED}
+    %    \label{fig:full-pos-sub}
+    %\end{figure}
+    
+    \begin{figure}[!htbp]
+        %\centering
+        \hspace{-1.5cm}
+        \includegraphics[scale=0.3]{Results/Images/position-with-vel.eps}
+        \caption{Position estimates with averaged velocity vectors.}
+        \label{fig:test-gnss-vel}
+    \end{figure}
+    
+    The distributions of the position error of both setups are represented as histograms in figures \ref{fig:error-hist} and \ref{fig:error-hist-gnss}. The tightly coupled solution was found to have a root mean square error (RMSE) of $\begin{bmatrix} 5.1192 & 2.5267 & 7.1108\end{bmatrix}$ in the north, east and down direction, respectively, while the purely GNSS based solution had a lower RMSE of $\begin{bmatrix}2.4492 & 1.3123 & 6.3648 \end{bmatrix}$. However, the former is seen to roughly retain a normal distribution, as opposed to the GNSS based estimation errors. At this point, it is also interesting to note how the noise of the receiver clock bias estimate increases significantly when the acceleration measurements are discarded, as shown in figure \ref{fig:bias-rate}.\\
+    
+    \begin{figure}[!htbp]
+        \hspace{-1.5cm}
+        \includegraphics[scale=0.3]{Results/Images/error-hist.eps}
+        \caption{Histogram showing the distribution of the position error during testing.}
+        \label{fig:error-hist}
+    \end{figure}
+    
+    \begin{figure}[!htbp]
+        \hspace{-1.5cm}
+        \includegraphics[scale=0.3]{Results/Images/error-hist-gnss.eps}
+        \caption{Histogram showing the distribution of the position error of the estimate based solely on GNSS measurements.}
+        \label{fig:error-hist-gnss}
+    \end{figure}
+    
+    \begin{figure}[!htbp]
+        \hspace{-1.5cm}
+        \includegraphics[scale=0.3]{Results/Images/bias_rate.eps}
+        \caption{Estimated receiver clock bias rate with and without acceleration measurements.}
+        \label{fig:bias-rate}
+    \end{figure}
+    
+    %The errors of the EKF and PixHawk position estimates with respect to the RTK solution are shown in figure \ref{fig:pos-err-sub}. 
+    
+    \subsection{Multi-GNSS}
+    \label{sec:res:multi-gnss}
+    It is interesting to note the increase in the amount of available satellites from adding GLONASS measurements. This is shown in figure \ref{fig:n-sat}. Note that this is the number of tracked satellites after the elevation mask is applied. In this case, the number of available satellites are more than doubled, and the tracking of the GLONASS satellites is more stable.\\
+    
+    \begin{figure}[!htbp]
+        \hspace{-1.5cm}
+        \includegraphics[scale=0.3]{Results/Images/n-visible.eps}
+        \caption{Number of tracked GLONASS and GPS satellites during testing}
+        \label{fig:n-sat}
+    \end{figure}
+    
+    To investigate the benefits of multi-GNSS, three different setups were tested for the EKF using GNSS only. Nameley, GPS and GLONASS at 10 Hz, only GPS at 10 Hz and lastly, both GPS and GLONASS at 5 Hz. The RMSE values of the position errors are shown in table \ref{tab:rmse-gnss}. Configuring the GNSS receiver to employ both GPS and GLONASS seems to result in a slightly lower RMSE. The postion errors, with respect to the RTK reference, are shown in figure \ref{fig:pos-err-gnss}. Figure \ref{fig:gnss-vel-map} shows the estimated latitude and longitude of the solution obtained from employing both GPS and GLONASS measurements at 10 Hz.
+    
+    \begin{table}[!htbp]
+        \centering
+        \begin{tabular}{|c|c|c|c|}
+            \hline
+            \textbf{Setup} & \textbf{North} & \textbf{East} & \textbf{Down}\\
+            \hline
+            GPS and GLONASS 10 Hz &  2.3733  &  1.3300  &  6.4983\\
+            GPS 10 Hz & 3.4710 &   1.5723 &   6.8607\\
+            GPS and GLONASS 5 Hz & 2.5865  &  1.3967 & 6.9490\\
+            \hline
+        \end{tabular}
+        \caption{RMSE values with different GNSS receiver configurations.}
+        \label{tab:rmse-gnss}
+    \end{table}
+    
+    \begin{figure}
+        \hspace{-1.5cm}
+        \includegraphics[scale=0.3]{Results/Images/position-err-gnss.eps}
+        \caption{Position error of the multi-GNSS setup with different configurations.}
+        \label{fig:pos-err-gnss}
+    \end{figure}
+    
+    \begin{figure}[!htbp]
+        %\centering
+        \hspace{-1.5cm}
+        \includegraphics[scale=0.3]{Results/Images/gnss-only-with-vel.eps}
+        \caption{Position estimates with averaged velocity vectors from the solution based only on GNSS measurements.}
+        \label{fig:gnss-vel-map}
+    \end{figure}
+    %IMU and GNSS compared with reference path
+    %velocity quiver plots in map
+    
+    %Position subplots compared with rtklib and px
+    
+    %number of Available satellites GPS, GPS & Glonass
+    
+    %cpu usage
+    
     
     
     
